@@ -30,6 +30,9 @@
     <Compile Include="backend\checks.js" />
     <Compile Include="backend\ViewOutput.js" />
     <Compile Include="routes\index.js" />
+    <Content Include=".ebextensions\elastic-beanstalk.config" />
+    <Content Include=".ebextensions\logging.config" />
+    <Content Include=".elasticbeanstalk\config.yml" />
     <Content Include="package.json" />
     <Compile Include="StoreIOT.js" />
     <Content Include="views\error.dot" />
@@ -42,6 +45,8 @@
     <Content Include="views\insertData.dot" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include=".ebextensions\" />
+    <Folder Include=".elasticbeanstalk\" />
     <Folder Include="backend\" />
     <Folder Include="routes\" />
     <Folder Include="views\" />
