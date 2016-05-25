@@ -1,9 +1,12 @@
 branch-defaults:
   default:
-    environment: StoreIOT-node-dev
+    environment: storeiot-dev
+    group_suffix: null
+  master:
+    environment: storeiot-dev
     group_suffix: null
 global:
-  application_name: StoreIOT-node
+  application_name: StoreIOT
   default_ec2_keyname: null
   default_platform: Node.js
   default_region: us-east-1
