@@ -1,0 +1,9 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <title>InsertData</title>
+  </head>
+  <body>
+    <p>[[= model.state ]], [[= model.hash ]], [[= model.msg ]]</p>
+  </body>
+</html>

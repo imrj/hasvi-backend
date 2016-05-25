@@ -1,0 +1,188 @@
+﻿var express = require('express');
+//const crypto = require('crypto');
+var AWS = require("aws-sdk");
+var dataChecks = require('../backend/checks');
+
+//check to see if this is a valid hash
+AWS.config.update({
+    //region: "ap-southeast-2"
+    region: "us-east-1"
+});
+
+var docClient = new AWS.DynamoDB.DocumentClient();
+
+//Insert data into an existing datastream
+exports.insertData = function (hash, data, res) {
+    //function insertData(hash, data, res) {
+    //validate the input
+    if (typeof hash === "undefined" || hash === null || typeof data === "undefined" || data === null || hash == "" || data == "") {
+        console.error('Error not enough arguments ');
+        res.render('insertData', { state: 'Error not enough arguments', hash: "", msg: "" });
+        return "-1";
+    }
+    
+    if (!dataChecks.isAlphaNumeric(hash) || !dataChecks.isNumericInt(data)) {
+        console.error('Error with INSERT DATA hash ' + hash);
+        res.render('insertData', { state: 'Error bad hash', hash: hash, msg: data });
+        return "-1";
+    }
+    
+
+    var paramsStream = {
+        TableName : "streams",
+        KeyConditionExpression: "#hr = :idd",
+        ExpressionAttributeNames: {
+            "#hr": "hash"
+        },
+        ExpressionAttributeValues: {
+            ":idd": hash
+        }
+    };
+    
+    docClient.query(paramsStream, function (err, querydata) {
+        if (err) {
+            console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+        } else {
+            console.log("Query succeeded.");
+            if (querydata.Items.length != 1) {
+                console.error('Error with INSERT DATA no hash ' + hash);
+                res.render('insertData', { state: ' Error No hash ', hash: hash, msg: data.toString() });
+                return "-1";
+            }
+            else {
+                //if valid hash go ahead and insert the data
+                //need a uuid of hash+datetime since dynamodb doesn't support composite primary keys
+                //so use that instead of seperate columns for hash and data
+                
+                //get milliseconds from Unix epoch (00:00:00 UTC on 1 January 1970)
+                var milliseconds = (new Date).getTime();
+                var paramsIOTdata = {
+                    TableName : "IOTData2",
+                    Item: {
+                        "hash": hash,
+                        "datetime" : milliseconds,
+                        "data": data,
+                    }
+                };
+                docClient.put(paramsIOTdata, function (err, querydataPut) {
+                    if (err) {
+                        console.error('Error with INSERT DATA hash ' + hash + 'and message ' + err);
+                        res.render('insertData', { state: 'Error', hash: hash, msg: data });
+                        return "-1";
+                    } else {
+                        console.log('Success with INSERT DATA hash ' + hash);
+                        res.render('insertData', { state: 'Success', hash: hash, msg: data });
+                        return hash;
+                    }
+                });
+            }
+        }
+    });
+
+};
+
+//Insert data into an existing datastream
+exports.resetData = function (hash, res) {
+    //function insertData(hash, data, res) {
+    //validate the input
+    if (typeof hash === "undefined" || hash === null || hash == "") {
+        console.error('Error not enough arguments ');
+        res.render('resetData', { state: 'Error not enough arguments', hash: "", msg: "" });
+        return "-1";
+    }
+    
+    if (!dataChecks.isAlphaNumeric(hash)) {
+        console.error('Error with rest DATA hash ' + hash);
+        res.render('resetData', { state: 'Error', hash: hash, msg: "" });
+        return "-1";
+    }
+    
+    //check to see if this is a valid hash
+    AWS.config.update({
+        region: "us-east-1"
+    });
+    
+    var docClient = new AWS.DynamoDB.DocumentClient();
+    var paramsStream = {
+        TableName : "streams",
+        KeyConditionExpression: "#hr = :idd",
+        ExpressionAttributeNames: {
+            "#hr": "hash"
+        },
+        ExpressionAttributeValues: {
+            ":idd": hash
+        }
+    };
+    
+    docClient.query(paramsStream, function (err, querydata) {
+        if (err) {
+            console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+        } else {
+            console.log("Query for valid hash succeeded.");
+            if (querydata.Items.length != 1) {
+                console.error('Error with reset DATA no hash ' + hash);
+                res.render('resetData', { state: ' Error No hash ', hash: hash, msg: "" });
+                return "-1";
+            }
+            else {
+                //if valid hash go ahead and delete the data
+                //dynamo db won't let us delete all the data at once - need to go line by line :(
+                //so first query to get all related rows (ie have the hash key)
+                var paramsIOTdata = {
+                    TableName : "IOTData2",
+                    KeyConditionExpression: "#hr = :idd",
+                    ExpressionAttributeNames: {
+                        "#hr": "hash"
+                    },
+                    ExpressionAttributeValues: {
+                        ":idd": hash
+                    }
+                };
+                
+                docClient.query(paramsIOTdata, function (err, querydata) {
+                    if (err) {
+                        console.error("Unable to query for items to delete. Error:", JSON.stringify(err, null, 2));
+                    } else {
+                        //for each item, run a delete query
+                        //and show a progress bar?. Don't want to flood the server with request for
+                        //deleting a large stream
+                        
+                        //if not items:
+                        if (querydata.Items.length == 0) {
+                            console.error('No items to delete with hash ' + hash);
+                            res.render('resetData', { state: 'Success', hash: hash, msg: "No items" });
+                            return "-1";
+                        }
+                        
+                        //using for rather than foreach so I have a counter index
+                        for (var i = 0; i < querydata.Items.length; i++) {
+                            var paramsdelIOTdata = {
+                                TableName: "IOTData2",
+                                Key: {
+                                    "hash": querydata.Items[i].hash,
+                                    "datetime": querydata.Items[i].datetime,
+                                },
+                                idx: 0
+                            };
+                            
+                            docClient.delete(paramsdelIOTdata, function (err, querydeldata) {
+                                if (err) {
+                                    console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
+                                } else {
+                                    paramsdelIOTdata.idx++;
+                                    console.log("resetData succeeded: ", hash, " for item ", paramsdelIOTdata.idx, " of ", querydata.Items.length.toString());
+                                }
+                            });
+                        }
+                        
+                        res.render('resetData', { state: 'Success', hash: hash, msg: "Done" });
+                        return hash;
+                    }
+                });
+                
+            }
+        }
+    });
+
+};
+

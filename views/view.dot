@@ -1,0 +1,9 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <title>View</title>
+  </head>
+  <body>
+    <p>[[= model.shortURL ]]</p>
+  </body>
+</html>
