@@ -30,10 +30,10 @@ router.get('/resetData', function (req, res) {
 });
 
 //view a stream, given the ID
-//http://localhost:1337/views/testrunnercsv
-//http://localhost:1337/views/testrunnersvg
+//http://localhost:1337/views/testrunnercsv.csv
+//http://localhost:1337/views/testrunnersvg.svg
 //http://localhost:1337/views/testrunnerhtml
-//http://localhost:1337/views/testRunnerPng
+//http://localhost:1337/views/testRunnerPng.png
 router.get('/views/:id', function (req, res) {
     var shortURL = req.params.id;
     

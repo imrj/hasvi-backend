@@ -24,7 +24,11 @@ exports.viewData = function (shortURL, res, req) {
         return "-1";
     }
     
-    if (!dataChecks.isAlphaNumeric(shortURL)) {
+    //split the url request into the filename and the file extension - both need to be checked
+    var shortURLName = shortURL.split('.')[0];
+    var shortURLExt = shortURL.split('.')[1];
+    
+    if (!dataChecks.isAlphaNumeric(shortURLName)) {
         console.error('Error with view URL ' + shortURL);
         res.render('view', { shortURL: 'Error bad url' });
         return "-1";
@@ -38,7 +42,7 @@ exports.viewData = function (shortURL, res, req) {
             "#hr": "subURL"
         },
         ExpressionAttributeValues: {
-            ":idd": shortURL
+            ":idd": shortURLName
         }
     };
     
@@ -48,7 +52,7 @@ exports.viewData = function (shortURL, res, req) {
         } else {
             console.log("Query succeeded.");
             if (querydata.Items.length != 1) {
-                console.error('Error with view no URL ' + shortURL);
+                console.error('Error with view no URL ' + shortURLName);
                 //res.render('view', { shortURL: 'Error bad url' });
                 res.sendStatus(404);
                 return "-1";
@@ -70,7 +74,13 @@ exports.viewData = function (shortURL, res, req) {
                 docClient.query(paramsIOTdata, function (err, queryIOTdata) {
                     if (err) {
                         console.error("Unable to query for items to delete. Error:", JSON.stringify(err, null, 2));
-                    } else {
+                    }
+                    //check the file extension matches the database
+                    else if (querydata.Items[0].type != shortURLExt && shortURLExt != 'html') {
+                        res.sendStatus(404);
+                        return "-1";                        
+                    }
+                    else {
                         //note sorting by date is performed automatically due to table having timestamp
                         //as the sort key
                         
