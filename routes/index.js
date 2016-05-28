@@ -4,10 +4,12 @@
 var express = require('express');
 var inData = require('../backend/AWSInData');
 var outData = require('../backend/ViewOutput');
+var versionDebug = require('../test/VersionDebug');
 var router = express.Router();
 
 router.get('/', function (req, res) {
-    res.render('index');
+    //res.render('insertData', { state: 'Error bad hash', hash: hash, msg: data });
+    res.render('index', {version: versionDebug.iot_getVersion()});
 });
 
 //posting data to database

@@ -6,6 +6,7 @@ var d3 = require("d3");
 var jsdom = require("jsdom");
 //var Canvas = require('canvas');
 var fabric = require('fabric').fabric;
+var versionDebug = require('../test/VersionDebug');
 
 //check to see if this is a valid view URL
 AWS.config.update({
@@ -36,7 +37,7 @@ exports.viewData = function (shortURL, res, req) {
     
     
     var paramsStream = {
-        TableName : "views",
+        TableName : versionDebug.iot_getViewsTable(),
         KeyConditionExpression: "#hr = :idd",
         ExpressionAttributeNames: {
             "#hr": "subURL"
@@ -61,7 +62,7 @@ exports.viewData = function (shortURL, res, req) {
                 //query the database for all values associated with the above hash
                 //TODO: add datetime filtering here
                 var paramsIOTdata = {
-                    TableName : "IOTData2",
+                    TableName : versionDebug.iot_getDataTable(),
                     KeyConditionExpression: "#hr = :idd",
                     ExpressionAttributeNames: {
                         "#hr": "hash"

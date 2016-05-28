@@ -2,6 +2,7 @@
 //const crypto = require('crypto');
 var AWS = require("aws-sdk");
 var dataChecks = require('../backend/checks');
+var versionDebug = require('../test/VersionDebug');
 
 //check to see if this is a valid hash
 AWS.config.update({
@@ -29,7 +30,7 @@ exports.insertData = function (hash, data, res) {
     
 
     var paramsStream = {
-        TableName : "streams",
+        TableName : versionDebug.iot_getStreamsTable(),
         KeyConditionExpression: "#hr = :idd",
         ExpressionAttributeNames: {
             "#hr": "hash"
@@ -57,7 +58,7 @@ exports.insertData = function (hash, data, res) {
                 //get milliseconds from Unix epoch (00:00:00 UTC on 1 January 1970)
                 var milliseconds = (new Date).getTime();
                 var paramsIOTdata = {
-                    TableName : "IOTData2",
+                    TableName : versionDebug.iot_getDataTable(),
                     Item: {
                         "hash": hash,
                         "datetime" : milliseconds,
@@ -104,7 +105,7 @@ exports.resetData = function (hash, res) {
     
     var docClient = new AWS.DynamoDB.DocumentClient();
     var paramsStream = {
-        TableName : "streams",
+        TableName : versionDebug.iot_getStreamsTable(),
         KeyConditionExpression: "#hr = :idd",
         ExpressionAttributeNames: {
             "#hr": "hash"
@@ -129,7 +130,7 @@ exports.resetData = function (hash, res) {
                 //dynamo db won't let us delete all the data at once - need to go line by line :(
                 //so first query to get all related rows (ie have the hash key)
                 var paramsIOTdata = {
-                    TableName : "IOTData2",
+                    TableName : versionDebug.iot_getDataTable(),
                     KeyConditionExpression: "#hr = :idd",
                     ExpressionAttributeNames: {
                         "#hr": "hash"
@@ -157,7 +158,7 @@ exports.resetData = function (hash, res) {
                         //using for rather than foreach so I have a counter index
                         for (var i = 0; i < querydata.Items.length; i++) {
                             var paramsdelIOTdata = {
-                                TableName: "IOTData2",
+                                TableName: versionDebug.iot_getDataTable(),
                                 Key: {
                                     "hash": querydata.Items[i].hash,
                                     "datetime": querydata.Items[i].datetime,

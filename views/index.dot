@@ -6,5 +6,6 @@
   <body>
 	<h1>Index</h1>
     <p>This is the index page for StoreIOT</p>
+	<p>Version: [[= model.version ]]</p>
   </body>
 </html>
