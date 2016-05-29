@@ -144,9 +144,9 @@ exports.viewData = function (shortURL, res, req) {
                             //scaling
                             var margin = { top: 20, right: 20, bottom: 110, left: 40 },
                                 width = 700 - margin.left - margin.right,
-                                height = 400 - margin.top - margin.bottom;
+                                height = 450 - margin.top - margin.bottom;
                             
-                            var date_format = d3.time.format.utc('%d-%m-%Y %H:%M:%S');
+                            var date_format = d3.time.format.utc('%d/%m/%Y__%H:%M:%S');
                             
                             //the canvas
                             var svg = d3.select(document.body).append("svg");
@@ -167,7 +167,7 @@ exports.viewData = function (shortURL, res, req) {
                             var x = d3.time.scale.utc().range([0, width])
                                 .domain(d3.extent(dataFormatted.map(function (dd) { return dd.datetime; }))).nice();
                             var y = d3.scale.linear().range([height, 0])
-                                .domain([0, d3.max(dataFormatted.map(function (dd) { return dd.value; }))]).nice();
+                                .domain([d3.min(dataFormatted.map(function (dd) { return dd.value; })), d3.max(dataFormatted.map(function (dd) { return dd.value; }))]).nice();
                             
                             var xAxis = d3.svg.axis().scale(x).tickFormat(date_format);
                             var yAxis = d3.svg.axis().scale(y).orient("left").ticks(10, "");

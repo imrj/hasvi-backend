@@ -14,6 +14,7 @@ router.get('/', function (req, res) {
 
 //posting data to database
 //http://localhost:1337/insertData?hash=gjt75iehdjf7rhg893e3&data=42
+//http://localhost:1337/insertData?hash=928w4289b713oc2gje8d&data=42
 router.get('/insertData', function (req, res) {
     var hash = req.query.hash;
     var data = req.query.data;
@@ -34,6 +35,7 @@ router.get('/resetData', function (req, res) {
 //view a stream, given the ID
 //http://localhost:1337/views/TestRunnerCsv.csv
 //http://localhost:1337/views/testrunnersvg.svg
+//http://localhost:1337/views/play.svg
 //http://localhost:1337/views/TestRunnerHtml
 //http://localhost:1337/views/testRunnerPng.png
 router.get('/views/:id', function (req, res) {
