@@ -6,6 +6,15 @@
 
 var package = require('../package.json');
 
+exports.iot_isDebug = function () {
+    if (process.env.mode == "PRODUCTION") {
+        return false;
+    }
+    else {
+        return true;
+    }
+};
+
 exports.iot_getVersion = function () {
     if (process.env.mode == "PRODUCTION") {
         return String(package.version);

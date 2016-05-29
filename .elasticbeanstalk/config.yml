@@ -1,9 +1,9 @@
 branch-defaults:
   default:
-    environment: storeiot-dev
+    environment: storeiot-testing
     group_suffix: null
   master:
-    environment: storeiot-dev
+    environment: storeiot-testing
     group_suffix: null
 global:
   application_name: StoreIOT

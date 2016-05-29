@@ -4,6 +4,7 @@ var path = require('path');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
 var engine = require('express-dot-engine');
+var versionDebug = require('./test/VersionDebug');
 
 //The URL route events
 var routes = require('./routes/index');
@@ -39,12 +40,13 @@ app.use('/views/:id', routes);
 
 // development error handler
 // will print stacktrace
-if (app.get('env') === 'development') {
+if (versionDebug.iot_isDebug()) {
     app.use(function (err, req, res, next) {
         res.status(err.status || 500);
         res.render('error', {
             message: err.message,
-            error: err
+            error: err,
+            version: versionDebug.iot_getVersion()
         });
     });
 }
@@ -55,7 +57,8 @@ app.use(function (err, req, res, next) {
     res.status(err.status || 500);
     res.render('error', {
         message: err.message,
-        error: {}
+        error: {},
+        version: versionDebug.iot_getVersion()
     });
 });
 

@@ -1,16 +1,13 @@
 ﻿var express = require('express');
-//const crypto = require('crypto');
 var AWS = require("aws-sdk");
 var dataChecks = require('../backend/checks');
 var d3 = require("d3");
 var jsdom = require("jsdom");
-//var Canvas = require('canvas');
 var fabric = require('fabric').fabric;
 var versionDebug = require('../test/VersionDebug');
 
 //check to see if this is a valid view URL
 AWS.config.update({
-    //region: "ap-southeast-2"
     region: "us-east-1"
 });
 
@@ -21,7 +18,8 @@ exports.viewData = function (shortURL, res, req) {
     //validate the input
     if (typeof shortURL === "undefined" || shortURL === null || shortURL == "") {
         console.error('Error in view not enough arguments');
-        res.render('view', { shortURL: 'Error not enough arguments' });
+        res.set('EStatus', '404 Not Found');
+        res.status(404).send();
         return "-1";
     }
     
@@ -31,7 +29,8 @@ exports.viewData = function (shortURL, res, req) {
     
     if (!dataChecks.isAlphaNumeric(shortURLName)) {
         console.error('Error with view URL ' + shortURL);
-        res.render('view', { shortURL: 'Error bad url' });
+        res.set('EStatus', '404 Not Found');
+        res.status(404).send();
         return "-1";
     }
     
@@ -55,7 +54,8 @@ exports.viewData = function (shortURL, res, req) {
             if (querydata.Items.length != 1) {
                 console.error('Error with view no URL ' + shortURLName);
                 //res.render('view', { shortURL: 'Error bad url' });
-                res.sendStatus(404);
+                res.set('EStatus', '404 Not Found');
+                res.status(404).send();
                 return "-1";
             }
             else {
@@ -75,11 +75,20 @@ exports.viewData = function (shortURL, res, req) {
                 docClient.query(paramsIOTdata, function (err, queryIOTdata) {
                     if (err) {
                         console.error("Unable to query for items to delete. Error:", JSON.stringify(err, null, 2));
+                        res.render('view', { shortURL: shortURLName, error: "Internal Error" });
+                        return "-1";
                     }
-                    //check the file extension matches the database
+                    //check the file extension matches the database, html doesn't need an extension though
                     else if (querydata.Items[0].type != shortURLExt && shortURLExt != 'html') {
-                        res.sendStatus(404);
-                        return "-1";                        
+                        res.set('EStatus', '404 Not Found');
+                        res.status(404).send();
+                        return "-1";
+                    }
+                    //check there's actually data to show
+                    if (queryIOTdata.Items.length == 0) {
+                        console.error("No items in view to show");
+                        res.render('view', { shortURL: shortURLName, error: "No data for this url" });
+                        return "-1";
                     }
                     else {
                         //note sorting by date is performed automatically due to table having timestamp
@@ -198,17 +207,12 @@ exports.viewData = function (shortURL, res, req) {
                               .style("fill", "none")
                               .attr("d", line(dataFormatted))
                             
-                            //and send the file to the client
+                            //add final svg tags
                             var html = svg
                                 .attr("title", "svg Plot")
                                 .attr("version", 1.1)
                                 .attr("xmlns", "http://www.w3.org/2000/svg")
                                 .node().outerHTML;
-                            //res.setHeader('Content-disposition', 'attachment; filename=data.svg');
-                            //var svgGraph = d3.select('svg').attr('xmlns', 'http://www.w3.org/2000/svg');
-                            //var svgXML = (jsdom.jsdom.(doc));
-                            //var serializer = new XMLSerializer();
-                            //var source = serializer.serializeToString(svg);
                             
                             //if svg, then send it
                             if (querydata.Items[0].type == 'svg') {
@@ -217,9 +221,9 @@ exports.viewData = function (shortURL, res, req) {
                                 return "0";
                                 //res.render('svgOutput', { svgstuff: svg.node().outerHTML });
                             }
-                            //or png, need to render to canvas then convert to png
+                            //if png, need to render to canvas then convert to png
                             else if (querydata.Items[0].type == 'png') {
-                                var canvas = new fabric.createCanvasForNode(700, 400);
+                                var canvas = new fabric.createCanvasForNode(700, 500);
                                  
                                 fabric.loadSVGFromString(html, function (objects, options) {
                                     var obj = new fabric.PathGroup(objects, options);

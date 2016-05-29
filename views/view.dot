@@ -4,6 +4,6 @@
     <title>View</title>
   </head>
   <body>
-    <p>[[= model.shortURL ]]</p>
+    <p>Error, [[= model.shortURL ]], [[= model.error ]]</p>
   </body>
 </html>

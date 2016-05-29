@@ -1,12 +1,10 @@
 ﻿var express = require('express');
-//const crypto = require('crypto');
 var AWS = require("aws-sdk");
 var dataChecks = require('../backend/checks');
 var versionDebug = require('../test/VersionDebug');
 
 //check to see if this is a valid hash
 AWS.config.update({
-    //region: "ap-southeast-2"
     region: "us-east-1"
 });
 
@@ -18,13 +16,13 @@ exports.insertData = function (hash, data, res) {
     //validate the input
     if (typeof hash === "undefined" || hash === null || typeof data === "undefined" || data === null || hash == "" || data == "") {
         console.error('Error not enough arguments ');
-        res.render('insertData', { state: 'Error not enough arguments', hash: "", msg: "" });
+        res.render('insertData', { state: 'Error', hash: "", msg: "Not enough arguments" });
         return "-1";
     }
     
     if (!dataChecks.isAlphaNumeric(hash) || !dataChecks.isNumericInt(data)) {
         console.error('Error with INSERT DATA hash ' + hash);
-        res.render('insertData', { state: 'Error bad hash', hash: hash, msg: data });
+        res.render('insertData', { state: 'Error', hash: hash, msg: 'Invalid hash' });
         return "-1";
     }
     
@@ -47,7 +45,7 @@ exports.insertData = function (hash, data, res) {
             console.log("Query succeeded.");
             if (querydata.Items.length != 1) {
                 console.error('Error with INSERT DATA no hash ' + hash);
-                res.render('insertData', { state: ' Error No hash ', hash: hash, msg: data.toString() });
+                res.render('insertData', { state: ' Error', hash: hash, msg: 'Invalid hash' });
                 return "-1";
             }
             else {
@@ -68,7 +66,7 @@ exports.insertData = function (hash, data, res) {
                 docClient.put(paramsIOTdata, function (err, querydataPut) {
                     if (err) {
                         console.error('Error with INSERT DATA hash ' + hash + 'and message ' + err);
-                        res.render('insertData', { state: 'Error', hash: hash, msg: data });
+                        res.render('insertData', { state: 'Error', hash: hash, msg: 'Internal error' });
                         return "-1";
                     } else {
                         console.log('Success with INSERT DATA hash ' + hash);
@@ -88,13 +86,13 @@ exports.resetData = function (hash, res) {
     //validate the input
     if (typeof hash === "undefined" || hash === null || hash == "") {
         console.error('Error not enough arguments ');
-        res.render('resetData', { state: 'Error not enough arguments', hash: "", msg: "" });
+        res.render('resetData', { state: 'Error', hash: "", msg: "Not enought arguments" });
         return "-1";
     }
     
     if (!dataChecks.isAlphaNumeric(hash)) {
         console.error('Error with rest DATA hash ' + hash);
-        res.render('resetData', { state: 'Error', hash: hash, msg: "" });
+        res.render('resetData', { state: 'Error', hash: hash, msg: "Invalid hash" });
         return "-1";
     }
     
@@ -122,7 +120,7 @@ exports.resetData = function (hash, res) {
             console.log("Query for valid hash succeeded.");
             if (querydata.Items.length != 1) {
                 console.error('Error with reset DATA no hash ' + hash);
-                res.render('resetData', { state: ' Error No hash ', hash: hash, msg: "" });
+                res.render('resetData', { state: 'Error', hash: hash, msg: "Invalid hash" });
                 return "-1";
             }
             else {
@@ -169,6 +167,8 @@ exports.resetData = function (hash, res) {
                             docClient.delete(paramsdelIOTdata, function (err, querydeldata) {
                                 if (err) {
                                     console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
+                                    res.render('resetData', { state: 'Error', hash: hash, msg: "Internal Error" });
+                                    return "-1";
                                 } else {
                                     paramsdelIOTdata.idx++;
                                     console.log("resetData succeeded: ", hash, " for item ", paramsdelIOTdata.idx, " of ", querydata.Items.length.toString());
@@ -176,8 +176,8 @@ exports.resetData = function (hash, res) {
                             });
                         }
                         
-                        res.render('resetData', { state: 'Success', hash: hash, msg: "Done" });
-                        return hash;
+                        res.render('resetData', { state: 'Success', hash: hash, msg: "Deleted " + querydata.Items.length.toString() + " items" });
+                        return "0";
                     }
                 });
                 
