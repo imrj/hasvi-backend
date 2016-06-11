@@ -14,7 +14,7 @@ router.get('/', function (req, res) {
 
 //posting data to database
 //http://localhost:1337/insertData?hash=gjt75iehdjf7rhg893e3&data=42
-//http://localhost:1337/insertData?hash=928w4289b713oc2gje8d&data=42
+//http://localhost:1337/insertData?hash=9sk13nx7rghrlopqnuhk&data=42
 router.get('/insertData', function (req, res) {
     var hash = req.query.hash;
     var data = req.query.data;

@@ -26,7 +26,7 @@ exports.insertData = function (hash, data, res) {
         return "-1";
     }
     
-
+    
     var paramsStream = {
         TableName : versionDebug.iot_getStreamsTable(),
         KeyConditionExpression: "#hr = :idd",
@@ -49,29 +49,81 @@ exports.insertData = function (hash, data, res) {
                 return "-1";
             }
             else {
-                //if valid hash go ahead and insert the data
-                //need a uuid of hash+datetime since dynamodb doesn't support composite primary keys
-                //so use that instead of seperate columns for hash and data
-                
-                //get milliseconds from Unix epoch (00:00:00 UTC on 1 January 1970)
-                var milliseconds = (new Date).getTime();
-                var paramsIOTdata = {
+                //check if there's enough room in this datastream
+                var SizeStream = {
                     TableName : versionDebug.iot_getDataTable(),
-                    Item: {
-                        "hash": hash,
-                        "datetime" : milliseconds,
-                        "data": data,
+                    KeyConditionExpression: "#hr = :idd",
+                    ExpressionAttributeNames: {
+                        "#hr": "hash"
+                    },
+                    ExpressionAttributeValues: {
+                        ":idd": hash
                     }
                 };
-                docClient.put(paramsIOTdata, function (err, querydataPut) {
+                
+                docClient.query(SizeStream, function (err, sizedata) {
                     if (err) {
-                        console.error('Error with INSERT DATA hash ' + hash + 'and message ' + err);
-                        res.render('insertData', { state: 'Error', hash: hash, msg: 'Internal error' });
-                        return "-1";
+                        console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
                     } else {
-                        console.log('Success with INSERT DATA hash ' + hash);
-                        res.render('insertData', { state: 'Success', hash: hash, msg: data });
-                        return hash;
+                        if (sizedata.Items.length > 0) {
+                            for (var i = 0; i <= (sizedata.Items.length - querydata.Items[0].maxStreamLength); i++) {
+                                //trim datastream down
+                                console.log("Having to trim down stream: ", sizedata.Items[i].hash)
+                                var paramsdelIOTdata = {
+                                    TableName: versionDebug.iot_getDataTable(),
+                                    Key: {
+                                        "hash": sizedata.Items[i].hash,
+                                        "datetime": sizedata.Items[i].datetime,
+                                    },
+                                };
+                                
+                                docClient.delete(paramsdelIOTdata, function (err, querydeldata) {
+                                    if (err) {
+                                        console.error("Unable to trim item. Error JSON:", JSON.stringify(err, null, 2));
+                                        res.render('insertData', { state: 'Error', hash: hash, msg: "Error trimming" });
+                                        return "-1";
+                                    }
+                                });
+                            }
+                        }
+                        //if valid hash go ahead and insert the data
+                        //need a uuid of hash+datetime since dynamodb doesn't support composite primary keys
+                        //so use that instead of seperate columns for hash and data
+                        
+                        //get milliseconds from Unix epoch (00:00:00 UTC on 1 January 1970)
+                        var milliseconds = (new Date).getTime();
+                        var paramsIOTdata = {
+                            TableName : versionDebug.iot_getDataTable(),
+                            Item: {
+                                "hash": hash,
+                                "datetime" : milliseconds,
+                                "data": data,
+                            }
+                        };
+                        docClient.put(paramsIOTdata, function (err, querydataPut) {
+                            if (err) {
+                                console.error('Error with INSERT DATA hash ' + hash + 'and message ' + err);
+                                res.render('insertData', { state: 'Error', hash: hash, msg: 'Internal error' });
+                                return "-1";
+                            } else {
+                                //tell the user if they're at or over the max length for their stream
+                                if (sizedata.Items.length >= querydata.Items[0].maxStreamLength) {
+                                    console.log('Success with INSERT DATA hash (over limit) ' + hash);
+                                    res.render('insertData', { state: 'Success over limit', hash: hash, msg: data });
+                                    return hash;
+                                }
+                                else if ((sizedata.Items.length - querydata.Items[0].maxStreamLength) == -1) {
+                                    console.log('Success with INSERT DATA hash (at limit) ' + hash);
+                                    res.render('insertData', { state: 'Success at limit', hash: hash, msg: data });
+                                    return hash;
+                                }
+                                else {
+                                    console.log('Success with INSERT DATA hash ' + hash);
+                                    res.render('insertData', { state: 'Success', hash: hash, msg: data });
+                                    return hash;
+                                }
+                            }
+                        });
                     }
                 });
             }
