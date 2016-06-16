@@ -43,15 +43,17 @@ exports.insertData = function (hash, data, res) {
             console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
         } else {
             console.log("Query succeeded.");
-            if (querydata.Items.length != 1) {
+            if (querydata.Count != 1) {
                 console.error('Error with INSERT DATA no hash ' + hash);
                 res.render('insertData', { state: ' Error', hash: hash, msg: 'Invalid hash' });
                 return "-1";
             }
             else {
                 //check if there's enough room in this datastream
+                //don't return actual items, just the count of items
                 var SizeStream = {
                     TableName : versionDebug.iot_getDataTable(),
+                    Select : "COUNT",
                     KeyConditionExpression: "#hr = :idd",
                     ExpressionAttributeNames: {
                         "#hr": "hash"
@@ -65,23 +67,42 @@ exports.insertData = function (hash, data, res) {
                     if (err) {
                         console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
                     } else {
-                        if (sizedata.Items.length > 0) {
-                            for (var i = 0; i <= (sizedata.Items.length - querydata.Items[0].maxStreamLength); i++) {
+                        if (sizedata.Count > 0) {
+                            for (var i = 0; i <= (sizedata.Count - querydata.Items[0].maxStreamLength); i++) {
                                 //trim datastream down
-                                console.log("Having to trim down stream: ", sizedata.Items[i].hash)
-                                var paramsdelIOTdata = {
-                                    TableName: versionDebug.iot_getDataTable(),
-                                    Key: {
-                                        "hash": sizedata.Items[i].hash,
-                                        "datetime": sizedata.Items[i].datetime,
+                                console.log("Having to trim down stream: ", hash)
+                                //query to find single item
+                                var ItemtoDeleteStream = {
+                                    TableName : versionDebug.iot_getDataTable(),
+                                    Limit : 1,
+                                    KeyConditionExpression: "#hr = :idd",
+                                    ExpressionAttributeNames: {
+                                        "#hr": "hash"
                                     },
+                                    ExpressionAttributeValues: {
+                                        ":idd": hash
+                                    }
                                 };
-                                
-                                docClient.delete(paramsdelIOTdata, function (err, querydeldata) {
+                                docClient.query(ItemtoDeleteStream, function (err, toDeleteData) {
                                     if (err) {
-                                        console.error("Unable to trim item. Error JSON:", JSON.stringify(err, null, 2));
-                                        res.render('insertData', { state: 'Error', hash: hash, msg: "Error trimming" });
-                                        return "-1";
+                                        console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+                                    } else {
+                                        //and delete it
+                                        var paramsdelIOTdata = {
+                                            TableName: versionDebug.iot_getDataTable(),
+                                            Key: {
+                                                "hash": toDeleteData.Items[0].hash,
+                                                "datetime": toDeleteData.Items[0].datetime,
+                                            },
+                                        };
+                                        
+                                        docClient.delete(paramsdelIOTdata, function (err, querydeldata) {
+                                            if (err) {
+                                                console.error("Unable to trim item. Error JSON:", JSON.stringify(err, null, 2));
+                                                res.render('insertData', { state: 'Error', hash: hash, msg: "Error trimming" });
+                                                return "-1";
+                                            }
+                                        });
                                     }
                                 });
                             }
@@ -107,12 +128,12 @@ exports.insertData = function (hash, data, res) {
                                 return "-1";
                             } else {
                                 //tell the user if they're at or over the max length for their stream
-                                if (sizedata.Items.length >= querydata.Items[0].maxStreamLength) {
+                                if (sizedata.Count >= querydata.Items[0].maxStreamLength) {
                                     console.log('Success with INSERT DATA hash (over limit) ' + hash);
                                     res.render('insertData', { state: 'Success over limit', hash: hash, msg: data });
                                     return hash;
                                 }
-                                else if ((sizedata.Items.length - querydata.Items[0].maxStreamLength) == -1) {
+                                else if ((sizedata.Count - querydata.Items[0].maxStreamLength) == -1) {
                                     console.log('Success with INSERT DATA hash (at limit) ' + hash);
                                     res.render('insertData', { state: 'Success at limit', hash: hash, msg: data });
                                     return hash;
