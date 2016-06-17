@@ -121,30 +121,63 @@ exports.insertData = function (hash, data, res) {
                                 "data": data,
                             }
                         };
-                        docClient.put(paramsIOTdata, function (err, querydataPut) {
+                        
+                        //check time of last uploaded-item
+                        var LastUploadedItemparams = {
+                            TableName : versionDebug.iot_getDataTable(),
+                            Limit : 1,
+                            ScanIndexForward: false,
+                            KeyConditionExpression: "#hr = :idd",
+                            ExpressionAttributeNames: {
+                                "#hr": "hash"
+                            },
+                            ExpressionAttributeValues: {
+                                ":idd": hash
+                            }
+                        };
+                        
+                        docClient.query(LastUploadedItemparams, function (err, lastItemdata) {
                             if (err) {
-                                console.error('Error with INSERT DATA hash ' + hash + 'and message ' + err);
-                                res.render('insertData', { state: 'Error', hash: hash, msg: 'Internal error' });
-                                return "-1";
+                                console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
                             } else {
-                                //tell the user if they're at or over the max length for their stream
-                                if (sizedata.Count >= querydata.Items[0].maxStreamLength) {
-                                    console.log('Success with INSERT DATA hash (over limit) ' + hash);
-                                    res.render('insertData', { state: 'Success over limit', hash: hash, msg: data });
-                                    return hash;
-                                }
-                                else if ((sizedata.Count - querydata.Items[0].maxStreamLength) == -1) {
-                                    console.log('Success with INSERT DATA hash (at limit) ' + hash);
-                                    res.render('insertData', { state: 'Success at limit', hash: hash, msg: data });
-                                    return hash;
+                                //check if the time-since-last-item-inserted is after the minRefresh threshold
+                                if (lastItemdata.Count > 0  && lastItemdata.Items[0].datetime + 1000*querydata.Items[0].minRefresh > milliseconds) {
+                                    //it's not ... send an error message to the user
+                                    console.log('Fail with INSERT DATA hash (minRefresh not ready) ' + hash);
+                                    res.render('insertData', { state: 'Error', hash: hash, msg: 'Min refresh time not expired' });
+                                    return "-1";
                                 }
                                 else {
-                                    console.log('Success with INSERT DATA hash ' + hash);
-                                    res.render('insertData', { state: 'Success', hash: hash, msg: data });
-                                    return hash;
+                                    //OK to insert
+                                    docClient.put(paramsIOTdata, function (err, querydataPut) {
+                                        if (err) {
+                                            console.error('Error with INSERT DATA hash ' + hash + 'and message ' + err);
+                                            res.render('insertData', { state: 'Error', hash: hash, msg: 'Internal error' });
+                                            return "-1";
+                                        } else {
+                                            //tell the user if they're at or over the max length for their stream
+                                            if (sizedata.Count >= querydata.Items[0].maxStreamLength) {
+                                                console.log('Success with INSERT DATA hash (over limit) ' + hash);
+                                                res.render('insertData', { state: 'Success over limit', hash: hash, msg: data });
+                                                return hash;
+                                            }
+                                            else if ((sizedata.Count - querydata.Items[0].maxStreamLength) == -1) {
+                                                console.log('Success with INSERT DATA hash (at limit) ' + hash);
+                                                res.render('insertData', { state: 'Success at limit', hash: hash, msg: data });
+                                                return hash;
+                                            }
+                                            else {
+                                                console.log('Success with INSERT DATA hash ' + hash);
+                                                res.render('insertData', { state: 'Success', hash: hash, msg: data });
+                                                return hash;
+                                            }
+                                        }
+                                    });
                                 }
                             }
                         });
+
+
                     }
                 });
             }
