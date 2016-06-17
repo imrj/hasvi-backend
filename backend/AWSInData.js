@@ -25,8 +25,7 @@ exports.insertData = function (hash, data, res) {
         res.render('insertData', { state: 'Error', hash: hash, msg: 'Invalid hash' });
         return "-1";
     }
-    
-    
+        
     var paramsStream = {
         TableName : versionDebug.iot_getStreamsTable(),
         KeyConditionExpression: "#hr = :idd",
@@ -38,6 +37,7 @@ exports.insertData = function (hash, data, res) {
         }
     };
     
+    //Get the relevant streams table entry
     docClient.query(paramsStream, function (err, querydata) {
         if (err) {
             console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
@@ -49,11 +49,23 @@ exports.insertData = function (hash, data, res) {
                 return "-1";
             }
             else {
-                //check if there's enough room in this datastream
-                //don't return actual items, just the count of items
-                var SizeStream = {
+                //get milliseconds from Unix epoch (00:00:00 UTC on 1 January 1970)
+                //prepare data structure for new insert
+                var milliseconds = (new Date).getTime();
+                var paramsIOTdata = {
                     TableName : versionDebug.iot_getDataTable(),
-                    Select : "COUNT",
+                    Item: {
+                        "hash": hash,
+                        "datetime" : milliseconds,
+                        "data": data,
+                    }
+                };
+                
+                //check time of last uploaded-item
+                var LastUploadedItemparams = {
+                    TableName : versionDebug.iot_getDataTable(),
+                    Limit : 1,
+                    ScanIndexForward: false,
                     KeyConditionExpression: "#hr = :idd",
                     ExpressionAttributeNames: {
                         "#hr": "hash"
@@ -63,91 +75,78 @@ exports.insertData = function (hash, data, res) {
                     }
                 };
                 
-                docClient.query(SizeStream, function (err, sizedata) {
+                //check time of last uploaded-item
+                docClient.query(LastUploadedItemparams, function (err, lastItemdata) {
                     if (err) {
                         console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
                     } else {
-                        if (sizedata.Count > 0) {
-                            for (var i = 0; i <= (sizedata.Count - querydata.Items[0].maxStreamLength); i++) {
-                                //trim datastream down
-                                console.log("Having to trim down stream: ", hash)
-                                //query to find single item
-                                var ItemtoDeleteStream = {
-                                    TableName : versionDebug.iot_getDataTable(),
-                                    Limit : 1,
-                                    KeyConditionExpression: "#hr = :idd",
-                                    ExpressionAttributeNames: {
-                                        "#hr": "hash"
-                                    },
-                                    ExpressionAttributeValues: {
-                                        ":idd": hash
-                                    }
-                                };
-                                docClient.query(ItemtoDeleteStream, function (err, toDeleteData) {
-                                    if (err) {
-                                        console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
-                                    } else {
-                                        //and delete it
-                                        var paramsdelIOTdata = {
-                                            TableName: versionDebug.iot_getDataTable(),
-                                            Key: {
-                                                "hash": toDeleteData.Items[0].hash,
-                                                "datetime": toDeleteData.Items[0].datetime,
-                                            },
-                                        };
-                                        
-                                        docClient.delete(paramsdelIOTdata, function (err, querydeldata) {
-                                            if (err) {
-                                                console.error("Unable to trim item. Error JSON:", JSON.stringify(err, null, 2));
-                                                res.render('insertData', { state: 'Error', hash: hash, msg: "Error trimming" });
-                                                return "-1";
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        }
-                        //if valid hash go ahead and insert the data
-                        //need a uuid of hash+datetime since dynamodb doesn't support composite primary keys
-                        //so use that instead of seperate columns for hash and data
-                        
-                        //get milliseconds from Unix epoch (00:00:00 UTC on 1 January 1970)
-                        var milliseconds = (new Date).getTime();
-                        var paramsIOTdata = {
-                            TableName : versionDebug.iot_getDataTable(),
-                            Item: {
-                                "hash": hash,
-                                "datetime" : milliseconds,
-                                "data": data,
-                            }
-                        };
-                        
-                        //check time of last uploaded-item
-                        var LastUploadedItemparams = {
-                            TableName : versionDebug.iot_getDataTable(),
-                            Limit : 1,
-                            ScanIndexForward: false,
-                            KeyConditionExpression: "#hr = :idd",
-                            ExpressionAttributeNames: {
-                                "#hr": "hash"
-                            },
-                            ExpressionAttributeValues: {
-                                ":idd": hash
-                            }
-                        };
-                        
-                        docClient.query(LastUploadedItemparams, function (err, lastItemdata) {
-                            if (err) {
-                                console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
-                            } else {
-                                //check if the time-since-last-item-inserted is after the minRefresh threshold
-                                if (lastItemdata.Count > 0  && lastItemdata.Items[0].datetime + 1000*querydata.Items[0].minRefresh > milliseconds) {
-                                    //it's not ... send an error message to the user
-                                    console.log('Fail with INSERT DATA hash (minRefresh not ready) ' + hash);
-                                    res.render('insertData', { state: 'Error', hash: hash, msg: 'Min refresh time not expired' });
-                                    return "-1";
+                        //check if the time-since-last-item-inserted is after the minRefresh threshold
+                        if (lastItemdata.Count > 0 && lastItemdata.Items[0].datetime + 1000 * querydata.Items[0].minRefresh > milliseconds) {
+                            //it's not ... send an error message to the user
+                            console.log('Fail with INSERT DATA hash (minRefresh not ready) ' + hash);
+                            res.render('insertData', { state: 'Error', hash: hash, msg: 'Min refresh time not expired' });
+                            return "-1";
+                        } else {
+                            //check if there's enough room in this datastream
+                            //don't return actual items, just the count of items
+                            var SizeStream = {
+                                TableName : versionDebug.iot_getDataTable(),
+                                Select : "COUNT",
+                                KeyConditionExpression: "#hr = :idd",
+                                ExpressionAttributeNames: {
+                                    "#hr": "hash"
+                                },
+                                ExpressionAttributeValues: {
+                                    ":idd": hash
                                 }
-                                else {
+                            };
+                            
+                            //check if there's enough room in this datastream
+                            docClient.query(SizeStream, function (err, sizedata) {
+                                if (err) {
+                                    console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+                                } else {
+                                    if (sizedata.Count > 0) {
+                                        for (var i = 0; i <= (sizedata.Count - querydata.Items[0].maxStreamLength); i++) {
+                                            //trim datastream down
+                                            console.log("Having to trim down stream: ", hash)
+                                            //query to find single item
+                                            var ItemtoDeleteStream = {
+                                                TableName : versionDebug.iot_getDataTable(),
+                                                Limit : 1,
+                                                KeyConditionExpression: "#hr = :idd",
+                                                ExpressionAttributeNames: {
+                                                    "#hr": "hash"
+                                                },
+                                                ExpressionAttributeValues: {
+                                                    ":idd": hash
+                                                }
+                                            };
+                                            docClient.query(ItemtoDeleteStream, function (err, toDeleteData) {
+                                                if (err) {
+                                                    console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+                                                } else {
+                                                    //and delete it
+                                                    var paramsdelIOTdata = {
+                                                        TableName: versionDebug.iot_getDataTable(),
+                                                        Key: {
+                                                            "hash": toDeleteData.Items[0].hash,
+                                                            "datetime": toDeleteData.Items[0].datetime,
+                                                        },
+                                                    };
+                                                    
+                                                    docClient.delete(paramsdelIOTdata, function (err, querydeldata) {
+                                                        if (err) {
+                                                            console.error("Unable to trim item. Error JSON:", JSON.stringify(err, null, 2));
+                                                            res.render('insertData', { state: 'Error', hash: hash, msg: "Error trimming" });
+                                                            return "-1";
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    }
+                                    
                                     //OK to insert
                                     docClient.put(paramsIOTdata, function (err, querydataPut) {
                                         if (err) {
@@ -174,10 +173,8 @@ exports.insertData = function (hash, data, res) {
                                         }
                                     });
                                 }
-                            }
-                        });
-
-
+                            });
+                        }
                     }
                 });
             }
