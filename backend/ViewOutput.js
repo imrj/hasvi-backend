@@ -9,6 +9,7 @@ var versionDebug = require('../test/VersionDebug');
 //check to see if this is a valid view URL
 AWS.config.update({
     region: "us-east-1"
+    //region: "ap-southeast-2"
 });
 
 var docClient = new AWS.DynamoDB.DocumentClient();

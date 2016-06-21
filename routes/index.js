@@ -23,12 +23,25 @@ router.get('/insertData', function (req, res) {
     inData.insertData(hash, data, res);
 });
 
+router.post('/insertData', function (req, res) {
+    var hash = req.body.hash;
+    var data = req.body.data;
+
+    inData.insertData(hash, data, res);
+});
+
 //reset a stream's data
 //http://localhost:1337/resetData?hash=gjt75iehdjf7rhg893e3
 router.get('/resetData', function (req, res) {
     var hash = req.query.hash;
     
     //res.render('index');
+    inData.resetData(hash, res);
+});
+
+router.post('/resetData', function (req, res) {
+    var hash = req.body.hash;
+    
     inData.resetData(hash, res);
 });
 

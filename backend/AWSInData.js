@@ -6,6 +6,7 @@ var versionDebug = require('../test/VersionDebug');
 //check to see if this is a valid hash
 AWS.config.update({
     region: "us-east-1"
+    //region: "ap-southeast-2"
 });
 
 var docClient = new AWS.DynamoDB.DocumentClient();
@@ -198,11 +199,6 @@ exports.resetData = function (hash, res) {
         res.render('resetData', { state: 'Error', hash: hash, msg: "Invalid hash" });
         return "-1";
     }
-    
-    //check to see if this is a valid hash
-    AWS.config.update({
-        region: "us-east-1"
-    });
     
     var docClient = new AWS.DynamoDB.DocumentClient();
     var paramsStream = {
