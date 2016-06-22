@@ -16,13 +16,13 @@ exports.insertData = function (hash, data, res) {
     //function insertData(hash, data, res) {
     //validate the input
     if (typeof hash === "undefined" || hash === null || typeof data === "undefined" || data === null || hash == "" || data == "") {
-        console.error('Error not enough arguments ');
+        if (!versionDebug.iot_onAWS()) { console.error('Error not enough arguments '); }
         res.render('insertData', { state: 'Error', hash: "", msg: "Not enough arguments" });
         return "-1";
     }
     
     if (!dataChecks.isAlphaNumeric(hash) || !dataChecks.isNumericInt(data)) {
-        console.error('Error with INSERT DATA hash ' + hash);
+        if (!versionDebug.iot_onAWS()) { console.error('Error with INSERT DATA hash ' + hash); }
         res.render('insertData', { state: 'Error', hash: hash, msg: 'Invalid hash' });
         return "-1";
     }
@@ -41,11 +41,11 @@ exports.insertData = function (hash, data, res) {
     //Get the relevant streams table entry
     docClient.query(paramsStream, function (err, querydata) {
         if (err) {
-            console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+            if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
         } else {
             console.log("Query succeeded.");
             if (querydata.Count != 1) {
-                console.error('Error with INSERT DATA no hash ' + hash);
+                if (!versionDebug.iot_onAWS()) { console.error('Error with INSERT DATA no hash ' + hash); }
                 res.render('insertData', { state: ' Error', hash: hash, msg: 'Invalid hash' });
                 return "-1";
             }
@@ -79,12 +79,12 @@ exports.insertData = function (hash, data, res) {
                 //check time of last uploaded-item
                 docClient.query(LastUploadedItemparams, function (err, lastItemdata) {
                     if (err) {
-                        console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+                        if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
                     } else {
                         //check if the time-since-last-item-inserted is after the minRefresh threshold
                         if (lastItemdata.Count > 0 && lastItemdata.Items[0].datetime + 1000 * querydata.Items[0].minRefresh > milliseconds) {
                             //it's not ... send an error message to the user
-                            console.log('Fail with INSERT DATA hash (minRefresh not ready) ' + hash);
+                            if (!versionDebug.iot_onAWS()) { console.log('Fail with INSERT DATA hash (minRefresh not ready) ' + hash); }
                             res.render('insertData', { state: 'Error', hash: hash, msg: 'Min refresh time not expired' });
                             return "-1";
                         } else {
@@ -105,7 +105,7 @@ exports.insertData = function (hash, data, res) {
                             //check if there's enough room in this datastream
                             docClient.query(SizeStream, function (err, sizedata) {
                                 if (err) {
-                                    console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+                                    if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
                                 } else {
                                     if (sizedata.Count > 0) {
                                         for (var i = 0; i <= (sizedata.Count - querydata.Items[0].maxStreamLength); i++) {
@@ -125,7 +125,7 @@ exports.insertData = function (hash, data, res) {
                                             };
                                             docClient.query(ItemtoDeleteStream, function (err, toDeleteData) {
                                                 if (err) {
-                                                    console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+                                                    if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
                                                 } else {
                                                     //and delete it
                                                     var paramsdelIOTdata = {
@@ -138,7 +138,7 @@ exports.insertData = function (hash, data, res) {
                                                     
                                                     docClient.delete(paramsdelIOTdata, function (err, querydeldata) {
                                                         if (err) {
-                                                            console.error("Unable to trim item. Error JSON:", JSON.stringify(err, null, 2));
+                                                            if (!versionDebug.iot_onAWS()) { console.error("Unable to trim item. Error JSON:", JSON.stringify(err, null, 2)); }
                                                             res.render('insertData', { state: 'Error', hash: hash, msg: "Error trimming" });
                                                             return "-1";
                                                         }
@@ -151,23 +151,23 @@ exports.insertData = function (hash, data, res) {
                                     //OK to insert
                                     docClient.put(paramsIOTdata, function (err, querydataPut) {
                                         if (err) {
-                                            console.error('Error with INSERT DATA hash ' + hash + 'and message ' + err);
+                                            if (!versionDebug.iot_onAWS()) { console.error('Error with INSERT DATA hash ' + hash + 'and message ' + err); }
                                             res.render('insertData', { state: 'Error', hash: hash, msg: 'Internal error' });
                                             return "-1";
                                         } else {
                                             //tell the user if they're at or over the max length for their stream
                                             if (sizedata.Count >= querydata.Items[0].maxStreamLength) {
-                                                console.log('Success with INSERT DATA hash (over limit) ' + hash);
+                                                if (!versionDebug.iot_onAWS()) { console.log('Success with INSERT DATA hash (over limit) ' + hash); }
                                                 res.render('insertData', { state: 'Success over limit', hash: hash, msg: data });
                                                 return hash;
                                             }
                                             else if ((sizedata.Count - querydata.Items[0].maxStreamLength) == -1) {
-                                                console.log('Success with INSERT DATA hash (at limit) ' + hash);
+                                                if (!versionDebug.iot_onAWS()) { console.log('Success with INSERT DATA hash (at limit) ' + hash); }
                                                 res.render('insertData', { state: 'Success at limit', hash: hash, msg: data });
                                                 return hash;
                                             }
                                             else {
-                                                console.log('Success with INSERT DATA hash ' + hash);
+                                                if (!versionDebug.iot_onAWS()) { console.log('Success with INSERT DATA hash ' + hash); }
                                                 res.render('insertData', { state: 'Success', hash: hash, msg: data });
                                                 return hash;
                                             }
@@ -189,13 +189,13 @@ exports.resetData = function (hash, res) {
     //function insertData(hash, data, res) {
     //validate the input
     if (typeof hash === "undefined" || hash === null || hash == "") {
-        console.error('Error not enough arguments ');
+        if (!versionDebug.iot_onAWS()) { console.error('Error not enough arguments '); }
         res.render('resetData', { state: 'Error', hash: "", msg: "Not enought arguments" });
         return "-1";
     }
     
     if (!dataChecks.isAlphaNumeric(hash)) {
-        console.error('Error with rest DATA hash ' + hash);
+        if (!versionDebug.iot_onAWS()) { console.error('Error with rest DATA hash ' + hash); }
         res.render('resetData', { state: 'Error', hash: hash, msg: "Invalid hash" });
         return "-1";
     }
@@ -214,11 +214,11 @@ exports.resetData = function (hash, res) {
     
     docClient.query(paramsStream, function (err, querydata) {
         if (err) {
-            console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+            if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
         } else {
             console.log("Query for valid hash succeeded.");
             if (querydata.Items.length != 1) {
-                console.error('Error with reset DATA no hash ' + hash);
+                if (!versionDebug.iot_onAWS()) { console.error('Error with reset DATA no hash ' + hash); }
                 res.render('resetData', { state: 'Error', hash: hash, msg: "Invalid hash" });
                 return "-1";
             }
@@ -239,7 +239,7 @@ exports.resetData = function (hash, res) {
                 
                 docClient.query(paramsIOTdata, function (err, querydata) {
                     if (err) {
-                        console.error("Unable to query for items to delete. Error:", JSON.stringify(err, null, 2));
+                        if (!versionDebug.iot_onAWS()) { console.error("Unable to query for items to delete. Error:", JSON.stringify(err, null, 2)); }
                     } else {
                         //for each item, run a delete query
                         //and show a progress bar?. Don't want to flood the server with request for
@@ -247,7 +247,7 @@ exports.resetData = function (hash, res) {
                         
                         //if not items:
                         if (querydata.Items.length == 0) {
-                            console.error('No items to delete with hash ' + hash);
+                            if (!versionDebug.iot_onAWS()) { console.error('No items to delete with hash ' + hash); }
                             res.render('resetData', { state: 'Success', hash: hash, msg: "No items" });
                             return "-1";
                         }
@@ -265,12 +265,12 @@ exports.resetData = function (hash, res) {
                             
                             docClient.delete(paramsdelIOTdata, function (err, querydeldata) {
                                 if (err) {
-                                    console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
+                                    if (!versionDebug.iot_onAWS()) { console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2)); }
                                     res.render('resetData', { state: 'Error', hash: hash, msg: "Internal Error" });
                                     return "-1";
                                 } else {
                                     paramsdelIOTdata.idx++;
-                                    console.log("resetData succeeded: ", hash, " for item ", paramsdelIOTdata.idx, " of ", querydata.Items.length.toString());
+                                    if (!versionDebug.iot_onAWS()) { console.log("resetData succeeded: ", hash, " for item ", paramsdelIOTdata.idx, " of ", querydata.Items.length.toString()); }
                                 }
                             });
                         }

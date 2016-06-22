@@ -40,7 +40,7 @@ app.use('/views/:id', routes);
 
 // development error handler
 // will print stacktrace
-if (versionDebug.iot_isDebug()) {
+if (!versionDebug.iot_onAWS()) {
     app.use(function (err, req, res, next) {
         res.status(err.status || 500);
         res.render('error', {
@@ -50,17 +50,18 @@ if (versionDebug.iot_isDebug()) {
         });
     });
 }
-
-// production error handler
-// no stacktraces leaked to user
-app.use(function (err, req, res, next) {
-    res.status(err.status || 500);
-    res.render('error', {
-        message: err.message,
-        error: {},
-        version: versionDebug.iot_getVersion()
+else {
+    // production error handler
+    // no stacktraces leaked to user
+    app.use(function (err, req, res, next) {
+        res.status(err.status || 500);
+        res.render('error', {
+            message: err.message,
+            error: {},
+            version: versionDebug.iot_getVersion()
+        });
     });
-});
+}
 
 //Export functions in this file
 module.exports = app;

@@ -6,6 +6,17 @@
 
 var package = require('../package.json');
 
+//are we on an WAS server? use onAWS=TRUE env var
+exports.iot_onAWS = function () {
+    if (process.env.onAWS == "TRUE") {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+//are we on a production server? Use mode=PRODUCTION env var
 exports.iot_isDebug = function () {
     if (process.env.mode == "PRODUCTION") {
         return false;
@@ -15,6 +26,7 @@ exports.iot_isDebug = function () {
     }
 };
 
+//Get current version from json
 exports.iot_getVersion = function () {
     if (process.env.mode == "PRODUCTION") {
         return String(package.version);

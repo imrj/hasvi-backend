@@ -18,7 +18,7 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 exports.viewData = function (shortURL, res, req) {
     //validate the input
     if (typeof shortURL === "undefined" || shortURL === null || shortURL == "") {
-        console.error('Error in view not enough arguments');
+        if (!versionDebug.iot_onAWS()) { console.error('Error in view not enough arguments'); }
         res.set('EStatus', '404 Not Found');
         res.status(404).send();
         return "-1";
@@ -29,7 +29,7 @@ exports.viewData = function (shortURL, res, req) {
     var shortURLExt = shortURL.split('.')[1];
     
     if (!dataChecks.isAlphaNumeric(shortURLName)) {
-        console.error('Error with view URL ' + shortURL);
+        if (!versionDebug.iot_onAWS()) { console.error('Error with view URL ' + shortURL); }
         res.set('EStatus', '404 Not Found');
         res.status(404).send();
         return "-1";
@@ -49,11 +49,11 @@ exports.viewData = function (shortURL, res, req) {
     
     docClient.query(paramsStream, function (err, querydata) {
         if (err) {
-            console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+            if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
         } else {
             console.log("Query succeeded.");
             if (querydata.Items.length != 1) {
-                console.error('Error with view no URL ' + shortURLName);
+                if (!versionDebug.iot_onAWS()) { console.error('Error with view no URL ' + shortURLName); }
                 //res.render('view', { shortURL: 'Error bad url' });
                 res.set('EStatus', '404 Not Found');
                 res.status(404).send();
@@ -75,7 +75,7 @@ exports.viewData = function (shortURL, res, req) {
                 
                 docClient.query(paramsIOTdata, function (err, queryIOTdata) {
                     if (err) {
-                        console.error("Unable to query for items to delete. Error:", JSON.stringify(err, null, 2));
+                        if (!versionDebug.iot_onAWS()) { console.error("Unable to query for items to delete. Error:", JSON.stringify(err, null, 2)); }
                         res.render('view', { shortURL: shortURLName, error: "Internal Error" });
                         return "-1";
                     }
@@ -87,7 +87,7 @@ exports.viewData = function (shortURL, res, req) {
                     }
                     //check there's actually data to show
                     if (queryIOTdata.Items.length == 0) {
-                        console.error("No items in view to show");
+                        if (!versionDebug.iot_onAWS()) { console.error("No items in view to show"); }
                         res.render('view', { shortURL: shortURLName, error: "No data for this url" });
                         return "-1";
                     }
