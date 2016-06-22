@@ -43,7 +43,7 @@ exports.insertData = function (hash, data, res) {
         if (err) {
             if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
         } else {
-            console.log("Query succeeded.");
+            //console.log("Query succeeded.");
             if (querydata.Count != 1) {
                 if (!versionDebug.iot_onAWS()) { console.error('Error with INSERT DATA no hash ' + hash); }
                 res.render('insertData', { state: ' Error', hash: hash, msg: 'Invalid hash' });
@@ -110,7 +110,7 @@ exports.insertData = function (hash, data, res) {
                                     if (sizedata.Count > 0) {
                                         for (var i = 0; i <= (sizedata.Count - querydata.Items[0].maxStreamLength); i++) {
                                             //trim datastream down
-                                            console.log("Having to trim down stream: ", hash)
+                                            if (!versionDebug.iot_onAWS()) { console.log("Having to trim down stream: ", hash); }
                                             //query to find single item
                                             var ItemtoDeleteStream = {
                                                 TableName : versionDebug.iot_getDataTable(),
@@ -216,7 +216,7 @@ exports.resetData = function (hash, res) {
         if (err) {
             if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
         } else {
-            console.log("Query for valid hash succeeded.");
+            if (!versionDebug.iot_onAWS()) { console.log("Query for valid hash succeeded."); }
             if (querydata.Items.length != 1) {
                 if (!versionDebug.iot_onAWS()) { console.error('Error with reset DATA no hash ' + hash); }
                 res.render('resetData', { state: 'Error', hash: hash, msg: "Invalid hash" });

@@ -51,7 +51,7 @@ exports.viewData = function (shortURL, res, req) {
         if (err) {
             if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
         } else {
-            console.log("Query succeeded.");
+            //console.log("Query succeeded.");
             if (querydata.Items.length != 1) {
                 if (!versionDebug.iot_onAWS()) { console.error('Error with view no URL ' + shortURLName); }
                 //res.render('view', { shortURL: 'Error bad url' });
