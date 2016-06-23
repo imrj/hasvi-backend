@@ -19,7 +19,8 @@
     <NodejsPort>1337</NodejsPort>
     <NodeExeArguments>
     </NodeExeArguments>
-    <Environment>onAWS=TRUE</Environment>
+    <Environment>
+    </Environment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />

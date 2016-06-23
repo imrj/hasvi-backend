@@ -147,7 +147,7 @@ exports.viewData = function (shortURL, res, req) {
                                 width = 700 - margin.left - margin.right,
                                 height = 450 - margin.top - margin.bottom;
                             
-                            var date_format = d3.time.format.utc('%d/%m/%Y__%H:%M:%S');
+                            var date_format = d3.time.format.utc('%d/%m/%Y %H:%M:%S');
                             
                             //the canvas
                             var svg = d3.select(document.body).append("svg");
@@ -180,18 +180,35 @@ exports.viewData = function (shortURL, res, req) {
                                 .y(function (dd) { return y(dd.value); });
                             
                             //add axes to canvas
+                            //http://localhost:1337/views/longtest.svg
+                            //http://localhost:1337/views/longtestpng.png to test
                             canvas.append("g")
                               .attr("class", "axis")
                               .attr("transform", "translate(0," + height + ")")
                               .call(xAxis)
                               .selectAll("text")
                               .style("text-anchor", "end")
-                              .attr("dx", "-0.8em")
-                              .attr("dy", "-0.55em")
+                              .call(function (t) {
+                                t.each(function (d) {
+                                    var self = d3.select(this);
+                                    var s = self.text().split(' ');
+                                    self.text(null);
+                                    self.append("tspan")
+                                    .attr("dx", "2.9em")
+                                    .attr("dy", "-1em")
+                                    .text(s[0]);
+                                    self.append("tspan")
+                                    .attr("dx", "-3.9em")
+                                    .attr("dy", "1em")
+                                    .text(s[1]);
+                                })
+                              })                             
+                              //.attr("dx", "-0.8em")
+                              //.attr("dy", "-0.55em")
                               .attr("transform", "rotate(-90)")
                               .attr("fill", "#000")
                               .attr("stroke", "none");
-
+                            
                             
                             canvas.append("g")
                               .attr("class", "axis")
@@ -199,7 +216,7 @@ exports.viewData = function (shortURL, res, req) {
                               .selectAll("text")
                               .attr("fill", "#000")
                               .attr("stroke", "none");
-                                                         
+                            
                             //add data points to canvas
                             canvas.append("path")
                               .attr("class", "line")
@@ -224,14 +241,14 @@ exports.viewData = function (shortURL, res, req) {
                             }
                             //if png, need to render to canvas then convert to png
                             else if (querydata.Items[0].type == 'png') {
-                                var canvas = new fabric.createCanvasForNode(700, 500);
-                                 
+                                var canvas = new fabric.createCanvasForNode(700, 460);
+                                
                                 fabric.loadSVGFromString(html, function (objects, options) {
                                     var obj = new fabric.PathGroup(objects, options);
                                     canvas.add(obj);
                                     canvas.renderAll();
                                     var stream = canvas.createPNGStream();
-                                
+                                    
                                     //res.setHeader('Content-disposition', 'attachment; filename=data.png');
                                     res.set('Content-Type', 'image/png');
                                     stream.pipe(res);
