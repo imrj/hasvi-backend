@@ -147,7 +147,8 @@ exports.viewData = function (shortURL, res, req) {
                                 width = 700 - margin.left - margin.right,
                                 height = 450 - margin.top - margin.bottom;
                             
-                            var date_format = d3.time.format.utc('%d/%m/%Y %H:%M:%S');
+                            var date_format = d3.time.format.utc('%d/%m/%Y');
+                            var time_format = d3.time.format.utc('%H:%M:%S');
                             
                             //the canvas
                             var svg = d3.select(document.body).append("svg");
@@ -170,7 +171,8 @@ exports.viewData = function (shortURL, res, req) {
                             var y = d3.scale.linear().range([height, 0])
                                 .domain([d3.min(dataFormatted.map(function (dd) { return dd.value; })), d3.max(dataFormatted.map(function (dd) { return dd.value; }))]).nice();
                             
-                            var xAxis = d3.svg.axis().scale(x).tickFormat(date_format);
+                            var xDateAxis = d3.svg.axis().scale(x).tickFormat(date_format);
+                            var xTimeAxis = d3.svg.axis().scale(x).tickFormat(time_format);
                             var yAxis = d3.svg.axis().scale(y).orient("left").ticks(10, "");
                             
                             //line plot points
@@ -179,36 +181,31 @@ exports.viewData = function (shortURL, res, req) {
                                 .x(function (dd) { return x(dd.datetime); })
                                 .y(function (dd) { return y(dd.value); });
                             
-                            //add axes to canvas
+                            //add axes to canvas. Note 2 axes - one for date, the other for time
                             //http://localhost:1337/views/longtest.svg
                             //http://localhost:1337/views/longtestpng.png to test
                             canvas.append("g")
                               .attr("class", "axis")
                               .attr("transform", "translate(0," + height + ")")
-                              .call(xAxis)
+                              .call(xDateAxis)
                               .selectAll("text")
-                              .style("text-anchor", "end")
-                              .call(function (t) {
-                                t.each(function (d) {
-                                    var self = d3.select(this);
-                                    var s = self.text().split(' ');
-                                    self.text(null);
-                                    self.append("tspan")
-                                    .attr("dx", "2.9em")
-                                    .attr("dy", "-1em")
-                                    .text(s[0]);
-                                    self.append("tspan")
-                                    .attr("dx", "-3.9em")
-                                    .attr("dy", "1em")
-                                    .text(s[1]);
-                                })
-                              })                             
-                              //.attr("dx", "-0.8em")
-                              //.attr("dy", "-0.55em")
+                              .style("text-anchor", "end")                     
+                              .attr("dx", "-0.8em")
+                              .attr("dy", "-1em")
                               .attr("transform", "rotate(-90)")
                               .attr("fill", "#000")
                               .attr("stroke", "none");
-                            
+                            canvas.append("g")
+                              .attr("class", "axis")
+                              .attr("transform", "translate(0," + height + ")")
+                              .call(xTimeAxis)
+                              .selectAll("text")
+                              .style("text-anchor", "end")
+                              .attr("dx", "-0.8em")
+                              .attr("dy", "0em")
+                              .attr("transform", "rotate(-90)")
+                              .attr("fill", "#000")
+                              .attr("stroke", "none");                            
                             
                             canvas.append("g")
                               .attr("class", "axis")
