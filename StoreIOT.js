@@ -27,14 +27,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 app.use('/insertData', routes);
 app.use('/resetData', routes);
-app.use('/views/:id', routes);
+app.use('/views/:username/:id', routes);
 
-// catch 404 and forward to error handler
-//app.use(function (req, res, next) {
-//    var err = new Error('Not Found');
-//    err.status = 404;
-//    next(err);
-//});
+// catch 404's
+app.use(function (req, res, next) {
+    var err = new Error('Not Found');
+    res.set('EStatus', '404 Not Found');
+    res.status(404).send();
+    return "-1";
+});
 
 // error handlers
 

@@ -46,16 +46,17 @@ router.post('/resetData', function (req, res) {
 });
 
 //view a stream, given the ID
-//http://localhost:1337/views/TestRunnerCsv.csv
-//http://localhost:1337/views/testrunnersvg.svg
-//http://localhost:1337/views/play.svg
-//http://localhost:1337/views/TestRunnerHtml
-//http://localhost:1337/views/testRunnerPng.png
-router.get('/views/:id', function (req, res) {
+//http://localhost:1337/views/admin/TestRunnerCsv.csv
+//http://localhost:1337/views/admin/testrunnersvg.svg
+//http://localhost:1337/views/admin/play.svg
+//http://localhost:1337/views/admin/TestRunnerHtml
+//http://localhost:1337/views/admin/testRunnerPng.png
+router.get('/views/:username/:id', function (req, res) {
     var shortURL = req.params.id;
+    var username = req.params.username;
     
     //res.render('view', { hash: shortURL });
-    outData.viewData(shortURL, res, req);
+    outData.viewData(shortURL, username, res, req);
 });
 
 module.exports = router;

@@ -15,9 +15,9 @@ AWS.config.update({
 var docClient = new AWS.DynamoDB.DocumentClient();
 
 //Given the shortURL, genertate a view
-exports.viewData = function (shortURL, res, req) {
+exports.viewData = function (shortURL, username, res, req) {
     //validate the input
-    if (typeof shortURL === "undefined" || shortURL === null || shortURL == "") {
+    if (typeof shortURL === "undefined" || shortURL === null || shortURL == "" | typeof username === "undefined" || username === null || username == "") {
         if (!versionDebug.iot_onAWS()) { console.error('Error in view not enough arguments'); }
         res.set('EStatus', '404 Not Found');
         res.status(404).send();
@@ -38,12 +38,15 @@ exports.viewData = function (shortURL, res, req) {
     
     var paramsStream = {
         TableName : versionDebug.iot_getViewsTable(),
-        KeyConditionExpression: "#hr = :idd",
+        IndexName: "username-subURL-index",
+        KeyConditionExpression: "#hr = :idd and #us = :idx",
         ExpressionAttributeNames: {
-            "#hr": "subURL"
+            "#hr": "subURL",
+            "#us": "username"
         },
         ExpressionAttributeValues: {
-            ":idd": shortURLName
+            ":idd": shortURLName,
+            ":idx": username
         }
     };
     
@@ -182,8 +185,8 @@ exports.viewData = function (shortURL, res, req) {
                                 .y(function (dd) { return y(dd.value); });
                             
                             //add axes to canvas. Note 2 axes - one for date, the other for time
-                            //http://localhost:1337/views/longtest.svg
-                            //http://localhost:1337/views/longtestpng.png to test
+                            //http://localhost:1337/views/admin/longtest.svg
+                            //http://localhost:1337/views/admin/longtestpng.png to test
                             canvas.append("g")
                               .attr("class", "axis")
                               .attr("transform", "translate(0," + height + ")")
