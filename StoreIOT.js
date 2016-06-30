@@ -65,7 +65,8 @@ else {
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-    res.status(404).send('Sorry cant find that!');
+    res.header('Status' , "404");
+    res.status(404);
 });
 
 //Export functions in this file
