@@ -64,9 +64,12 @@ else {
 }
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
-    res.header('Status' , "404");
-    res.status(404);
+//app.use(function (req, res, next) {
+//    res.header('Status' , "404");
+//    res.status(404);
+//});
+app.use("*", function (req, res) {
+    res.status(404).send('404');
 });
 
 //Export functions in this file
