@@ -29,39 +29,44 @@ app.use('/insertData', routes);
 app.use('/resetData', routes);
 app.use('/views/:username/:id', routes);
 
-// catch 404 and forward to error handler
-//app.use(function (req, res, next) {
-//    var err = new Error('Not Found');
-//    err.status = 404;
-//    next(err);
-//});
-
 // error handlers
 
 // development error handler
 // will print stacktrace
 if (!versionDebug.iot_onAWS()) {
-    app.use(function (err, req, res, next) {
-        res.status(err.status || 500);
+    function errorHandler(err, req, res, next) {
+        if (res.headersSent) {
+            return next(err);
+        }
+        res.status(500);
         res.render('error', {
-            message: err.message,
-            error: err,
+            message: err,
+            error: {},
             version: versionDebug.iot_getVersion()
         });
-    });
+    }
+
 }
 else {
     // production error handler
     // no stacktraces leaked to user
-    app.use(function (err, req, res, next) {
-        res.status(err.status || 500);
+    function errorHandler(err, req, res, next) {
+        if (res.headersSent) {
+            return next(err);
+        }
+        res.status(500);
         res.render('error', {
-            message: err.message,
+            message: {},
             error: {},
             version: versionDebug.iot_getVersion()
         });
-    });
+    }
 }
+
+// catch 404 and forward to error handler
+app.use(function (req, res, next) {
+    res.status(404).send('Sorry cant find that!');
+});
 
 //Export functions in this file
 module.exports = app;

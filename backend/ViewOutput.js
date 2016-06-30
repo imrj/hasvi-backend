@@ -19,7 +19,7 @@ exports.viewData = function (shortURL, username, res, req) {
     //validate the input
     if (typeof shortURL === "undefined" || shortURL === null || shortURL == "" | typeof username === "undefined" || username === null || username == "") {
         if (!versionDebug.iot_onAWS()) { console.error('Error in view not enough arguments'); }
-        res.send(404);
+        next('route');
         return "-1";
     }
     
@@ -29,7 +29,7 @@ exports.viewData = function (shortURL, username, res, req) {
     
     if (!dataChecks.isAlphaNumeric(shortURLName)) {
         if (!versionDebug.iot_onAWS()) { console.error('Error with view URL ' + shortURL); }
-        res.send(404);
+        next('route');
         return "-1";
     }
     
@@ -62,14 +62,14 @@ exports.viewData = function (shortURL, username, res, req) {
     docClient.query(paramsStream, function (err, querydata) {
         if (err) {
             if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
-            res.send(404);
+            next('route');
             return "-1";
         } else {
             //console.log("Query succeeded.");
             if (querydata.Items.length != 1) {
                 if (!versionDebug.iot_onAWS()) { console.error('Error with view no URL ' + shortURLName); }
                 //res.render('view', { shortURL: 'Error bad url' });
-                res.send(404);
+                next('route');
                 return "-1";
             }
             else {
