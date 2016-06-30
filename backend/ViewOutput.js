@@ -19,8 +19,7 @@ exports.viewData = function (shortURL, username, res, req) {
     //validate the input
     if (typeof shortURL === "undefined" || shortURL === null || shortURL == "" | typeof username === "undefined" || username === null || username == "") {
         if (!versionDebug.iot_onAWS()) { console.error('Error in view not enough arguments'); }
-        res.set('EStatus', '404 Not Found');
-        res.status(404).send();
+        res.send(404);
         return "-1";
     }
     
@@ -30,36 +29,47 @@ exports.viewData = function (shortURL, username, res, req) {
     
     if (!dataChecks.isAlphaNumeric(shortURLName)) {
         if (!versionDebug.iot_onAWS()) { console.error('Error with view URL ' + shortURL); }
-        res.set('EStatus', '404 Not Found');
-        res.status(404).send();
+        res.send(404);
         return "-1";
     }
     
     
+    //var paramsStream = {
+    //    TableName : versionDebug.iot_getViewsTable(),
+    //    IndexName: "username-subURL-index",
+    //    KeyConditionExpression: "#hr = :idd and #us = :idx",
+    //    ExpressionAttributeNames: {
+    //        "#hr": "subURL",
+    //        "#us": "username"
+    //    },
+    //    ExpressionAttributeValues: {
+    //        ":idd": shortURLName,
+    //        ":idx": username
+    //    }
+    //};
+    
     var paramsStream = {
         TableName : versionDebug.iot_getViewsTable(),
-        IndexName: "username-subURL-index",
-        KeyConditionExpression: "#hr = :idd and #us = :idx",
+        KeyConditionExpression: "#hr = :idd",
         ExpressionAttributeNames: {
             "#hr": "subURL",
-            "#us": "username"
         },
         ExpressionAttributeValues: {
             ":idd": shortURLName,
-            ":idx": username
         }
     };
-    
+        
     docClient.query(paramsStream, function (err, querydata) {
         if (err) {
             if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
+            res.send(404);
+            return "-1";
         } else {
             //console.log("Query succeeded.");
             if (querydata.Items.length != 1) {
                 if (!versionDebug.iot_onAWS()) { console.error('Error with view no URL ' + shortURLName); }
                 //res.render('view', { shortURL: 'Error bad url' });
-                res.set('EStatus', '404 Not Found');
-                res.status(404).send();
+                res.send(404);
                 return "-1";
             }
             else {
@@ -84,8 +94,7 @@ exports.viewData = function (shortURL, username, res, req) {
                     }
                     //check the file extension matches the database, html doesn't need an extension though
                     else if (querydata.Items[0].type != shortURLExt && shortURLExt != 'html') {
-                        res.set('EStatus', '404 Not Found');
-                        res.status(404).send();
+                        res.send(404);
                         return "-1";
                     }
                     //check there's actually data to show
