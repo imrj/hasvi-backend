@@ -26,7 +26,7 @@ exports.insertData = function (hash, data, res) {
         res.render('insertData', { state: 'Error', hash: hash, msg: 'Invalid hash' });
         return "-1";
     }
-        
+    
     var paramsStream = {
         TableName : versionDebug.iot_getStreamsTable(),
         KeyConditionExpression: "#hr = :idd",
@@ -88,17 +88,19 @@ exports.insertData = function (hash, data, res) {
                             res.render('insertData', { state: 'Error', hash: hash, msg: 'Min refresh time not expired' });
                             return "-1";
                         } else {
-                            //check if there's enough room in this datastream
+                            //check if there's enough room in this datastream (accounting for basetime)
                             //don't return actual items, just the count of items
                             var SizeStream = {
                                 TableName : versionDebug.iot_getDataTable(),
                                 Select : "COUNT",
-                                KeyConditionExpression: "#hr = :idd",
+                                KeyConditionExpression: "#hr = :idd and #dd > :basett",
                                 ExpressionAttributeNames: {
-                                    "#hr": "hash"
+                                    "#hr": "hash",
+                                    "#dd": "datetime"
                                 },
                                 ExpressionAttributeValues: {
-                                    ":idd": hash
+                                    ":idd": hash,
+                                    ":basett": querydata.Items[0].basetime
                                 }
                             };
                             
@@ -109,18 +111,20 @@ exports.insertData = function (hash, data, res) {
                                 } else {
                                     if (sizedata.Count > 0) {
                                         for (var i = 0; i <= (sizedata.Count - querydata.Items[0].maxStreamLength); i++) {
-                                            //trim datastream down
+                                            //trim datastream down by 
                                             if (!versionDebug.iot_onAWS()) { console.log("Having to trim down stream: ", hash); }
                                             //query to find single item
                                             var ItemtoDeleteStream = {
                                                 TableName : versionDebug.iot_getDataTable(),
                                                 Limit : 1,
-                                                KeyConditionExpression: "#hr = :idd",
+                                                KeyConditionExpression: "#hr = :idd and #dd > :basett",
                                                 ExpressionAttributeNames: {
-                                                    "#hr": "hash"
+                                                    "#hr": "hash",
+                                                    "#dd": "datetime"
                                                 },
                                                 ExpressionAttributeValues: {
-                                                    ":idd": hash
+                                                    ":idd": hash,
+                                                    ":basett": querydata.Items[0].basetime
                                                 }
                                             };
                                             docClient.query(ItemtoDeleteStream, function (err, toDeleteData) {
@@ -184,7 +188,8 @@ exports.insertData = function (hash, data, res) {
 
 };
 
-//Insert data into an existing datastream
+//Reset a stream to blank. Doesn't actaully delete the data (AWS makes it too difficult)
+//Instead updates the 'basetime' in the streams table to the current datetime as the '0' time
 exports.resetData = function (hash, res) {
     //function insertData(hash, data, res) {
     //validate the input
@@ -223,63 +228,33 @@ exports.resetData = function (hash, res) {
                 return "-1";
             }
             else {
-                //if valid hash go ahead and delete the data
-                //dynamo db won't let us delete all the data at once - need to go line by line :(
-                //so first query to get all related rows (ie have the hash key)
-                var paramsIOTdata = {
-                    TableName : versionDebug.iot_getDataTable(),
-                    KeyConditionExpression: "#hr = :idd",
-                    ExpressionAttributeNames: {
-                        "#hr": "hash"
+                //if valid hash go ahead and reset the stream to a new base time
+                var milliseconds = (new Date).getTime();
+                var paramsStreamUpdate = {
+                    TableName : versionDebug.iot_getStreamsTable(),
+                    Key: {
+                        "hash": hash
                     },
-                    ExpressionAttributeValues: {
-                        ":idd": hash
-                    }
+                    AttributeUpdates: {
+                    // The attributes to update (map of attribute name to AttributeValueUpdate)                       
+                        basetime: {
+                            Action: 'PUT', // PUT (replace)
+                            Value: milliseconds 
+                        },
+                    },
                 };
                 
-                docClient.query(paramsIOTdata, function (err, querydata) {
+                docClient.update(paramsStreamUpdate, function (err, querydata) {
                     if (err) {
-                        if (!versionDebug.iot_onAWS()) { console.error("Unable to query for items to delete. Error:", JSON.stringify(err, null, 2)); }
-                    } else {
-                        //for each item, run a delete query
-                        //and show a progress bar?. Don't want to flood the server with request for
-                        //deleting a large stream
-                        
-                        //if not items:
-                        if (querydata.Items.length == 0) {
-                            if (!versionDebug.iot_onAWS()) { console.error('No items to delete with hash ' + hash); }
-                            res.render('resetData', { state: 'Success', hash: hash, msg: "No items" });
-                            return "-1";
-                        }
-                        
-                        //using for rather than foreach so I have a counter index
-                        for (var i = 0; i < querydata.Items.length; i++) {
-                            var paramsdelIOTdata = {
-                                TableName: versionDebug.iot_getDataTable(),
-                                Key: {
-                                    "hash": querydata.Items[i].hash,
-                                    "datetime": querydata.Items[i].datetime,
-                                },
-                                idx: 0
-                            };
-                            
-                            docClient.delete(paramsdelIOTdata, function (err, querydeldata) {
-                                if (err) {
-                                    if (!versionDebug.iot_onAWS()) { console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2)); }
-                                    res.render('resetData', { state: 'Error', hash: hash, msg: "Internal Error" });
-                                    return "-1";
-                                } else {
-                                    paramsdelIOTdata.idx++;
-                                    if (!versionDebug.iot_onAWS()) { console.log("resetData succeeded: ", hash, " for item ", paramsdelIOTdata.idx, " of ", querydata.Items.length.toString()); }
-                                }
-                            });
-                        }
-                        
-                        res.render('resetData', { state: 'Success', hash: hash, msg: "Deleted " + querydata.Items.length.toString() + " items" });
+                        if (!versionDebug.iot_onAWS()) { console.error("Unable reset data. Error:", JSON.stringify(err, null, 2)); }
+                        res.render('resetData', { state: 'Error', hash: hash, msg: "Internal Error" });
+                        return "-1";
+                    } else {                       
+                        res.render('resetData', { state: 'Success', hash: hash, msg: "Reset" });
                         return "0";
                     }
+
                 });
-                
             }
         }
     });
