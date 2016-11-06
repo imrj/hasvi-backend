@@ -87,7 +87,7 @@ exports.insertData = function (token, data, res) {
                             res.render('insertData', { state: 'Error', token: token, msg: 'Min refresh time not expired' });
                             return "-1";
                         } else {
-                            //check if there's enough room in this datastream (accounting for basetime)
+                            //check if there's enough room in this datastream (accounting for baseTime)
                             //don't return actual items, just the count of items
                             var SizeStream = {
                                 TableName : versionDebug.iot_getDataTable(),
@@ -99,7 +99,7 @@ exports.insertData = function (token, data, res) {
                                 },
                                 ExpressionAttributeValues: {
                                     ":idd": token,
-                                    ":basett": querydata.Items[0].basetime
+                                    ":basett": querydata.Items[0].baseTime
                                 }
                             };
                             
@@ -123,7 +123,7 @@ exports.insertData = function (token, data, res) {
                                                 },
                                                 ExpressionAttributeValues: {
                                                     ":idd": token,
-                                                    ":basett": querydata.Items[0].basetime
+                                                    ":basett": querydata.Items[0].baseTime
                                                 }
                                             };
                                             docClient.query(ItemtoDeleteStream, function (err, toDeleteData) {
@@ -188,7 +188,7 @@ exports.insertData = function (token, data, res) {
 };
 
 //Reset a stream to blank. Doesn't actaully delete the data (AWS makes it too difficult)
-//Instead updates the 'basetime' in the streams table to the current datetime as the '0' time
+//Instead updates the 'baseTime' in the streams table to the current datetime as the '0' time
 exports.resetData = function (token, res) {
     //function insertData(token, data, res) {
     //validate the input
@@ -236,7 +236,7 @@ exports.resetData = function (token, res) {
                     },
                     AttributeUpdates: {
                     // The attributes to update (map of attribute name to AttributeValueUpdate)                       
-                        basetime: {
+                        baseTime: {
                             Action: 'PUT', // PUT (replace)
                             Value: milliseconds 
                         },

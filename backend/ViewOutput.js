@@ -73,7 +73,7 @@ exports.viewData = function (shortURL, username, res, req) {
                 return "-1";
             }
             else {
-                //query streams table to ensure data stream exists and grab basetime
+                //query streams table to ensure data stream exists and grab baseTime
                 var paramsStream = {
                     TableName : versionDebug.iot_getStreamsTable(),
                     KeyConditionExpression: "#hr = :idd",
@@ -97,7 +97,7 @@ exports.viewData = function (shortURL, username, res, req) {
                             return "-1";
                         }                      
                         //query the database for all values associated with the above hash
-                        //taking into account the basetime
+                        //taking into account the baseTime
                         var paramsIOTdata = {
                             TableName : versionDebug.iot_getDataTable(),
                             KeyConditionExpression: "#hr = :idd and #dd > :basett",
@@ -107,7 +107,7 @@ exports.viewData = function (shortURL, username, res, req) {
                             },
                             ExpressionAttributeValues: {
                                 ":idd": querydata.Items[0].hash,
-                                ":basett": querystreamdata.Items[0].basetime
+                                ":basett": querystreamdata.Items[0].baseTime
                             }
                         };
                         
