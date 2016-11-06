@@ -1,14 +1,14 @@
 branch-defaults:
   default:
-    environment: storeiot-testing
+    environment: Custom-env
     group_suffix: null
   master:
-    environment: storeiot-testing
+    environment: null
     group_suffix: null
 global:
-  application_name: StoreIOT
+  application_name: Hasvi-testing
   default_ec2_keyname: null
   default_platform: Node.js
-  default_region: us-east-1
+  default_region: ap-southeast-2
   profile: eb-cli
-  sc: null
+  sc: git

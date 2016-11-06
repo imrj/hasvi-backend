@@ -5,25 +5,24 @@ var versionDebug = require('../test/VersionDebug');
 
 //check to see if this is a valid hash
 AWS.config.update({
-    region: "us-east-1"
-    //region: "ap-southeast-2"
+    region: "ap-southeast-2"
 });
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
 //Insert data into an existing datastream
-exports.insertData = function (hash, data, res) {
-    //function insertData(hash, data, res) {
+exports.insertData = function (token, data, res) {
+    //function insertData(token, data, res) {
     //validate the input
-    if (typeof hash === "undefined" || hash === null || typeof data === "undefined" || data === null || hash == "" || data == "") {
+    if (typeof token === "undefined" || token === null || typeof data === "undefined" || data === null || token == "" || data == "") {
         if (!versionDebug.iot_onAWS()) { console.error('Error not enough arguments '); }
-        res.render('insertData', { state: 'Error', hash: "", msg: "Not enough arguments" });
+        res.render('insertData', { state: 'Error', token: "", msg: "Not enough arguments" });
         return "-1";
     }
     
-    if (!dataChecks.isAlphaNumeric(hash) || !dataChecks.isNumericInt(data)) {
-        if (!versionDebug.iot_onAWS()) { console.error('Error with INSERT DATA hash ' + hash); }
-        res.render('insertData', { state: 'Error', hash: hash, msg: 'Invalid hash' });
+    if (!dataChecks.isAlphaNumeric(token) || !dataChecks.isNumericInt(data)) {
+        if (!versionDebug.iot_onAWS()) { console.error('Error with INSERT DATA token ' + token); }
+        res.render('insertData', { state: 'Error', token: token, msg: 'Invalid token' });
         return "-1";
     }
     
@@ -34,7 +33,7 @@ exports.insertData = function (hash, data, res) {
             "#hr": "hash"
         },
         ExpressionAttributeValues: {
-            ":idd": hash
+            ":idd": token
         }
     };
     
@@ -45,8 +44,8 @@ exports.insertData = function (hash, data, res) {
         } else {
             //console.log("Query succeeded.");
             if (querydata.Count != 1) {
-                if (!versionDebug.iot_onAWS()) { console.error('Error with INSERT DATA no hash ' + hash); }
-                res.render('insertData', { state: ' Error', hash: hash, msg: 'Invalid hash' });
+                if (!versionDebug.iot_onAWS()) { console.error('Error with INSERT DATA no token ' + token); }
+                res.render('insertData', { state: ' Error', token: token, msg: 'Invalid token' });
                 return "-1";
             }
             else {
@@ -56,7 +55,7 @@ exports.insertData = function (hash, data, res) {
                 var paramsIOTdata = {
                     TableName : versionDebug.iot_getDataTable(),
                     Item: {
-                        "hash": hash,
+                        "hash": token,
                         "datetime" : milliseconds,
                         "data": data,
                     }
@@ -72,7 +71,7 @@ exports.insertData = function (hash, data, res) {
                         "#hr": "hash"
                     },
                     ExpressionAttributeValues: {
-                        ":idd": hash
+                        ":idd": token
                     }
                 };
                 
@@ -84,8 +83,8 @@ exports.insertData = function (hash, data, res) {
                         //check if the time-since-last-item-inserted is after the minRefresh threshold
                         if (lastItemdata.Count > 0 && lastItemdata.Items[0].datetime + 1000 * querydata.Items[0].minRefresh > milliseconds) {
                             //it's not ... send an error message to the user
-                            if (!versionDebug.iot_onAWS()) { console.log('Fail with INSERT DATA hash (minRefresh not ready) ' + hash); }
-                            res.render('insertData', { state: 'Error', hash: hash, msg: 'Min refresh time not expired' });
+                            if (!versionDebug.iot_onAWS()) { console.log('Fail with INSERT DATA token (minRefresh not ready) ' + token); }
+                            res.render('insertData', { state: 'Error', token: token, msg: 'Min refresh time not expired' });
                             return "-1";
                         } else {
                             //check if there's enough room in this datastream (accounting for basetime)
@@ -99,7 +98,7 @@ exports.insertData = function (hash, data, res) {
                                     "#dd": "datetime"
                                 },
                                 ExpressionAttributeValues: {
-                                    ":idd": hash,
+                                    ":idd": token,
                                     ":basett": querydata.Items[0].basetime
                                 }
                             };
@@ -112,7 +111,7 @@ exports.insertData = function (hash, data, res) {
                                     if (sizedata.Count > 0) {
                                         for (var i = 0; i <= (sizedata.Count - querydata.Items[0].maxStreamLength); i++) {
                                             //trim datastream down by 
-                                            if (!versionDebug.iot_onAWS()) { console.log("Having to trim down stream: ", hash); }
+                                            if (!versionDebug.iot_onAWS()) { console.log("Having to trim down stream: ", token); }
                                             //query to find single item
                                             var ItemtoDeleteStream = {
                                                 TableName : versionDebug.iot_getDataTable(),
@@ -123,7 +122,7 @@ exports.insertData = function (hash, data, res) {
                                                     "#dd": "datetime"
                                                 },
                                                 ExpressionAttributeValues: {
-                                                    ":idd": hash,
+                                                    ":idd": token,
                                                     ":basett": querydata.Items[0].basetime
                                                 }
                                             };
@@ -143,7 +142,7 @@ exports.insertData = function (hash, data, res) {
                                                     docClient.delete(paramsdelIOTdata, function (err, querydeldata) {
                                                         if (err) {
                                                             if (!versionDebug.iot_onAWS()) { console.error("Unable to trim item. Error JSON:", JSON.stringify(err, null, 2)); }
-                                                            res.render('insertData', { state: 'Error', hash: hash, msg: "Error trimming" });
+                                                            res.render('insertData', { state: 'Error', token: token, msg: "Error trimming" });
                                                             return "-1";
                                                         }
                                                     });
@@ -155,25 +154,25 @@ exports.insertData = function (hash, data, res) {
                                     //OK to insert
                                     docClient.put(paramsIOTdata, function (err, querydataPut) {
                                         if (err) {
-                                            if (!versionDebug.iot_onAWS()) { console.error('Error with INSERT DATA hash ' + hash + 'and message ' + err); }
-                                            res.render('insertData', { state: 'Error', hash: hash, msg: 'Internal error' });
+                                            if (!versionDebug.iot_onAWS()) { console.error('Error with INSERT DATA token ' + token + 'and message ' + err); }
+                                            res.render('insertData', { state: 'Error', token: token, msg: 'Internal error' });
                                             return "-1";
                                         } else {
                                             //tell the user if they're at or over the max length for their stream
                                             if (sizedata.Count >= querydata.Items[0].maxStreamLength) {
-                                                if (!versionDebug.iot_onAWS()) { console.log('Success with INSERT DATA hash (over limit) ' + hash); }
-                                                res.render('insertData', { state: 'Success over limit', hash: hash, msg: data });
-                                                return hash;
+                                                if (!versionDebug.iot_onAWS()) { console.log('Success with INSERT DATA token (over limit) ' + token); }
+                                                res.render('insertData', { state: 'Success over limit', token: token, msg: data });
+                                                return token;
                                             }
                                             else if ((sizedata.Count - querydata.Items[0].maxStreamLength) == -1) {
-                                                if (!versionDebug.iot_onAWS()) { console.log('Success with INSERT DATA hash (at limit) ' + hash); }
-                                                res.render('insertData', { state: 'Success at limit', hash: hash, msg: data });
-                                                return hash;
+                                                if (!versionDebug.iot_onAWS()) { console.log('Success with INSERT DATA token (at limit) ' + token); }
+                                                res.render('insertData', { state: 'Success at limit', token: token, msg: data });
+                                                return token;
                                             }
                                             else {
-                                                if (!versionDebug.iot_onAWS()) { console.log('Success with INSERT DATA hash ' + hash); }
-                                                res.render('insertData', { state: 'Success', hash: hash, msg: data });
-                                                return hash;
+                                                if (!versionDebug.iot_onAWS()) { console.log('Success with INSERT DATA token ' + token); }
+                                                res.render('insertData', { state: 'Success', token: token, msg: data });
+                                                return token;
                                             }
                                         }
                                     });
@@ -190,18 +189,18 @@ exports.insertData = function (hash, data, res) {
 
 //Reset a stream to blank. Doesn't actaully delete the data (AWS makes it too difficult)
 //Instead updates the 'basetime' in the streams table to the current datetime as the '0' time
-exports.resetData = function (hash, res) {
-    //function insertData(hash, data, res) {
+exports.resetData = function (token, res) {
+    //function insertData(token, data, res) {
     //validate the input
-    if (typeof hash === "undefined" || hash === null || hash == "") {
+    if (typeof token === "undefined" || token === null || token == "") {
         if (!versionDebug.iot_onAWS()) { console.error('Error not enough arguments '); }
-        res.render('resetData', { state: 'Error', hash: "", msg: "Not enought arguments" });
+        res.render('resetData', { state: 'Error', token: "", msg: "Not enought arguments" });
         return "-1";
     }
     
-    if (!dataChecks.isAlphaNumeric(hash)) {
-        if (!versionDebug.iot_onAWS()) { console.error('Error with rest DATA hash ' + hash); }
-        res.render('resetData', { state: 'Error', hash: hash, msg: "Invalid hash" });
+    if (!dataChecks.isAlphaNumeric(token)) {
+        if (!versionDebug.iot_onAWS()) { console.error('Error with rest DATA token ' + token); }
+        res.render('resetData', { state: 'Error', token: token, msg: "Invalid token" });
         return "-1";
     }
     
@@ -213,7 +212,7 @@ exports.resetData = function (hash, res) {
             "#hr": "hash"
         },
         ExpressionAttributeValues: {
-            ":idd": hash
+            ":idd": token
         }
     };
     
@@ -221,19 +220,19 @@ exports.resetData = function (hash, res) {
         if (err) {
             if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
         } else {
-            if (!versionDebug.iot_onAWS()) { console.log("Query for valid hash succeeded."); }
+            if (!versionDebug.iot_onAWS()) { console.log("Query for valid token succeeded."); }
             if (querydata.Items.length != 1) {
-                if (!versionDebug.iot_onAWS()) { console.error('Error with reset DATA no hash ' + hash); }
-                res.render('resetData', { state: 'Error', hash: hash, msg: "Invalid hash" });
+                if (!versionDebug.iot_onAWS()) { console.error('Error with reset DATA no token ' + token); }
+                res.render('resetData', { state: 'Error', token: token, msg: "Invalid token" });
                 return "-1";
             }
             else {
-                //if valid hash go ahead and reset the stream to a new base time
+                //if valid token go ahead and reset the stream to a new base time
                 var milliseconds = (new Date).getTime();
                 var paramsStreamUpdate = {
                     TableName : versionDebug.iot_getStreamsTable(),
                     Key: {
-                        "hash": hash
+                        "hash": token
                     },
                     AttributeUpdates: {
                     // The attributes to update (map of attribute name to AttributeValueUpdate)                       
@@ -247,10 +246,10 @@ exports.resetData = function (hash, res) {
                 docClient.update(paramsStreamUpdate, function (err, querydata) {
                     if (err) {
                         if (!versionDebug.iot_onAWS()) { console.error("Unable reset data. Error:", JSON.stringify(err, null, 2)); }
-                        res.render('resetData', { state: 'Error', hash: hash, msg: "Internal Error" });
+                        res.render('resetData', { state: 'Error', token: token, msg: "Internal Error" });
                         return "-1";
                     } else {                       
-                        res.render('resetData', { state: 'Success', hash: hash, msg: "Reset" });
+                        res.render('resetData', { state: 'Success', token: token, msg: "Reset" });
                         return "0";
                     }
 
