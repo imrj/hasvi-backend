@@ -4,6 +4,6 @@
     <title>InsertData</title>
   </head>
   <body>
-    <p>[[= model.state ]], [[= model.hash ]], [[= model.msg ]]</p>
+    <p>[[= model.state ]], [[= model.token ]], [[= model.msg ]]</p>
   </body>
 </html>
