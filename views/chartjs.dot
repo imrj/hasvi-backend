@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html>
+	<head>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.bundle.min.js"></script>
+		<title>Chart</title>
+	</head>
+
+	<body>
+		<div style="width: 600px;">
+			<canvas id="myChart" width="600" height="500"></canvas>
+		</div>
+
+		<script>
+			var ctx = document.getElementById("myChart");
+			var myChart = new Chart(ctx, {
+				type: 'line',
+				data: {
+					labels: [[= model.labels ]],
+					datasets: [{
+						label: '[[= model.datalabel ]]',
+						data: [[= model.data ]],
+						borderWidth: 1,
+						cubicInterpolationMode: 'monotone',
+						fill: false,
+						lineTension: 0.0
+					}]
+				},
+				options: {
+					scales: {
+						yAxes: [{
+							ticks: {
+								beginAtZero:true
+							}
+						}],
+						xAxes: [{
+							type: 'time',
+							time: {
+								//format: 'MM/DD/YYYY HH:mm',
+								autoSkip: false,
+								//round: 'hour'
+								max: '[[= model.maxdate ]]',
+								min: '[[= model.mindate ]]'
+							},
+							ticks: {
+								padding: 50,
+								maxRotation: 90,
+								minRotation: 90
+							},
+							scaleLabel: {
+								display: true,
+								labelString: 'Time (UTC)'
+							}
+						}]
+					}
+				}
+			});
+		</script>
+	</body>
+</html>

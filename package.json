@@ -13,6 +13,7 @@
     "express-dot-engine": "^1.0.7",
     "fabric": "^1.6.2",
     "jsdom": "^8.5.0",
+    "moment": "^2.16.0",
     "morgan": "^1.7.0"
   },
   "scripts": {

@@ -118,7 +118,7 @@ exports.viewData = function (shortURL, username, res, req) {
                                 return "-1";
                             }
                     //check the file extension matches the database, html doesn't need an extension though
-                            else if (querydata.Items[0].type != shortURLExt && shortURLExt != 'html') {
+                            else if (querydata.Items[0].type != shortURLExt && shortURLExt != 'html' && querydata.Items[0].type != 'chartjs') {
                                 res.status(404).send('404');
                                 return "-1";
                             }
@@ -148,6 +148,61 @@ exports.viewData = function (shortURL, username, res, req) {
                                     res.status(200).send(csvoutput);
                                     return "0";
 
+                                }
+                                //return pre-formatted page for angular-chart.js
+                                else if (querydata.Items[0].type == 'chartjs') {
+                                    //format the strings
+                                    var numstring = "[";
+                                    var datestring = "[";
+                                    var mindate = 999999999999999999999999999999;
+                                    var maxdate = 0;
+                                    for (var i = 0; i < queryIOTdata.Items.length; i++) {
+                                        numstring += "" + queryIOTdata.Items[i].data + ", ";
+                                        var strdate = new Date(queryIOTdata.Items[i].datetime).toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                                        datestring += "\"" + strdate + "\", ";
+                                        if (queryIOTdata.Items[i].datetime < mindate)
+                                            mindate = queryIOTdata.Items[i].datetime;
+                                        if (queryIOTdata.Items[i].datetime > maxdate)
+                                            maxdate = queryIOTdata.Items[i].datetime;
+                                    }
+                                    numstring = numstring.substring(0, numstring.length - 2);
+                                    numstring += "]";
+                                    datestring = datestring.substring(0, datestring.length - 2);
+                                    datestring += "]";
+                                    //figure out the time scale - minutes, hours, days, months
+                                    //less than 30 min, round to min
+                                    if (maxdate - mindate < 1000 * 60 * 30) {
+                                        mindate = Math.floor(mindate / (1000 * 60 * 1)) * 1000 * 60 * 1;
+                                        maxdate = Math.ceil(maxdate / (1000 * 60 * 1)) * 1000 * 60 * 1;
+                                    }
+                                    //less than 180min, so round to 10's of minutes
+                                    else if (maxdate - mindate < 1000 * 60 * 180) {
+                                        mindate = Math.floor(mindate / (1000 * 60 * 10)) * 1000 * 60 * 10;
+                                        maxdate = Math.ceil(maxdate / (1000 * 60 * 10)) * 1000 * 60 * 10;
+                                    }
+                                    //less than 72 hours, round to hours
+                                    else if (maxdate - mindate < 1000 * 60 * 60 * 72) {
+                                        mindate = Math.floor(mindate / (1000 * 60 * 60)) * 1000 * 60 * 60;
+                                        maxdate = Math.ceil(maxdate / (1000 * 60 * 60)) * 1000 * 60 * 60;
+                                    }
+                                    //less than 30 days, round to days
+                                    else if (maxdate - mindate < 1000 * 60 * 60 * 24 * 30) {
+                                        mindate = Math.floor(mindate / (1000 * 60 * 60 * 24)) * 1000 * 60 * 60 * 24;
+                                        maxdate = Math.ceil(maxdate / (1000 * 60 * 60 * 24)) * 1000 * 60 * 60 * 24;
+                                    }
+                                    //less than 90 days, round to months (else)
+                                    else {
+                                        //var tmpmindate = new Date(mindate).;
+                                        //var tmpmaxdate = new Date(maxdate);
+                                        //mindate = Math.floor(tmpmindate.) * 1000 * 60 * 60 * 24;
+                                        //maxdate = Math.ceil(maxdate / (1000 * 60 * 60 * 24)) * 1000 * 60 * 60 * 24;
+                                    }
+                                    var strmindate = new Date(mindate).toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                                    var strmaxdate = new Date(maxdate).toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                                    
+                                    //var ts = moment(queryIOTdata.Items[i].datetime);
+                                    res.render('chartjs', { labels: datestring, datalabel: shortURLName, data: numstring, mindate: strmindate, maxdate: strmaxdate });
+                                    return "0";
                                 }
                         //return a html file (basic table)
                                 else if (querydata.Items[0].type == 'html') {

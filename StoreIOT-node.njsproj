@@ -37,6 +37,7 @@
     <Content Include="package.json" />
     <Compile Include="StoreIOT.js" />
     <Content Include="views\error.dot" />
+    <Content Include="views\chartjs.dot" />
     <Content Include="views\index.dot" />
     <Content Include="views\htmlOutput.dot" />
     <Content Include="views\view.dot" />
