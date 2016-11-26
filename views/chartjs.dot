@@ -22,10 +22,15 @@
 						borderWidth: 1,
 						cubicInterpolationMode: 'monotone',
 						fill: false,
-						lineTension: 0.0
+						lineTension: 0.0,
+						pointRadius: 0,
+						borderColor: '#ff6384'
 					}]
 				},
 				options: {
+					legend: {
+						display: false
+					},
 					scales: {
 						yAxes: [{
 							ticks: {
@@ -44,7 +49,8 @@
 							ticks: {
 								padding: 50,
 								maxRotation: 90,
-								minRotation: 90
+								minRotation: 90,
+								maxTicksLimit: 20
 							},
 							scaleLabel: {
 								display: true,
