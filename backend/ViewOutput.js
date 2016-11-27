@@ -17,7 +17,7 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 //Given the shortURL, genertate a view
 exports.viewData = function (shortURL, username, res, req) {
     //validate the input
-    if (typeof shortURL === "undefined" || shortURL === null || shortURL == "" | typeof username === "undefined" || username === null || username == "") {
+    if (typeof shortURL === "undefined" || shortURL === null || shortURL == "" || typeof username === "undefined" || username === null || username == "") {
         if (!versionDebug.iot_onAWS()) { console.error('Error in view not enough arguments'); }
         res.status(404).send('404');
         return "-1";
@@ -363,7 +363,7 @@ exports.viewData = function (shortURL, username, res, req) {
 //Helper function to take into account timezones
 //We're working in millisec
 function dateCompensateTimezone(queryViewDataItems) {
-    if (typeof queryViewDataItems.timezone === "undefined" || parseInt(queryViewDataItems.timezone) == 0) {
+    if (typeof queryViewDataItems.timezone === "undefined" || queryViewDataItems.timezone === null || parseInt(queryViewDataItems.timezone) == 0) {
         return 0;
     }
     else {
@@ -372,7 +372,7 @@ function dateCompensateTimezone(queryViewDataItems) {
 }
 
 function dateCompensateTimezoneString(queryViewDataItems) {
-    if (typeof queryViewDataItems.timezone === "undefined" || parseInt(queryViewDataItems.timezone) == 0) {
+    if (typeof queryViewDataItems.timezone === "undefined" || queryViewDataItems.timezone === null || parseInt(queryViewDataItems.timezone) == 0) {
         return "UTC";
     }
     else {

@@ -54,7 +54,7 @@
 							},
 							scaleLabel: {
 								display: true,
-								labelString: '[[= model.tz ]]'
+								labelString: 'Time ([[= model.tz ]])'
 							}
 						}]
 					}
