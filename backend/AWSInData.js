@@ -26,7 +26,7 @@ exports.insertData = function (token, data, res) {
         return "-1";
     }
     
-    var paramsStream = {
+    var paramsStreamQuery = {
         TableName : versionDebug.iot_getStreamsTable(),
         KeyConditionExpression: "#hr = :idd",
         ExpressionAttributeNames: {
@@ -38,7 +38,7 @@ exports.insertData = function (token, data, res) {
     };
     
     //Get the relevant streams table entry
-    docClient.query(paramsStream, function (err, querydata) {
+    docClient.query(paramsStreamQuery, function (err, querydata) {
         if (err) {
             if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
         } else {
@@ -205,7 +205,7 @@ exports.resetData = function (token, res) {
     }
     
     var docClient = new AWS.DynamoDB.DocumentClient();
-    var paramsStream = {
+    var paramsStreamQuery = {
         TableName : versionDebug.iot_getStreamsTable(),
         KeyConditionExpression: "#hr = :idd",
         ExpressionAttributeNames: {
@@ -216,7 +216,7 @@ exports.resetData = function (token, res) {
         }
     };
     
-    docClient.query(paramsStream, function (err, querydata) {
+    docClient.query(paramsStreamQuery, function (err, querydata) {
         if (err) {
             if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
         } else {

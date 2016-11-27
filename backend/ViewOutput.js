@@ -6,12 +6,12 @@ var jsdom = require("jsdom");
 var fabric = require('fabric').fabric;
 var versionDebug = require('../test/VersionDebug');
 
-//check to see if this is a valid view URL
+//COnfig the AWS Zone
 AWS.config.update({
-    //region: "us-east-1"
     region: "ap-southeast-2"
 });
 
+//Create the dynamodb client
 var docClient = new AWS.DynamoDB.DocumentClient();
 
 //Given the shortURL, genertate a view
@@ -34,39 +34,39 @@ exports.viewData = function (shortURL, username, res, req) {
     }
     
     
-    //var paramsStream = {
-    //    TableName : versionDebug.iot_getViewsTable(),
-    //    IndexName: "username-subURL-index",
-    //    KeyConditionExpression: "#hr = :idd and #us = :idx",
-    //    ExpressionAttributeNames: {
-    //        "#hr": "subURL",
-    //        "#us": "username"
-    //    },
-    //    ExpressionAttributeValues: {
-    //        ":idd": shortURLName,
-    //        ":idx": username
-    //    }
-    //};
-    
-    var paramsStream = {
+    var paramsViewQuery = {
         TableName : versionDebug.iot_getViewsTable(),
-        KeyConditionExpression: "#hr = :idd",
+        IndexName: "username-subURL-index",
+        KeyConditionExpression: "#hr = :idd and #us = :idx",
         ExpressionAttributeNames: {
             "#hr": "subURL",
+            "#us": "username"
         },
         ExpressionAttributeValues: {
             ":idd": shortURLName,
+            ":idx": username
         }
     };
     
-    docClient.query(paramsStream, function (err, querydata) {
+    //var paramsViewQuery = {
+    //    TableName : versionDebug.iot_getViewsTable(),
+    //    KeyConditionExpression: "#hr = :idd",
+    //    ExpressionAttributeNames: {
+    //        "#hr": "subURL",
+    //    },
+    //    ExpressionAttributeValues: {
+    //        ":idd": shortURLName,
+    //    }
+    //};
+    
+    docClient.query(paramsViewQuery, function (err, queryViewData) {
         if (err) {
             if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
             res.status(404).send('404');
             return "-1";
         } else {
             //console.log("Query succeeded.");
-            if (querydata.Items.length != 1) {
+            if (queryViewData.Items.length != 1) {
                 if (!versionDebug.iot_onAWS()) { console.error('Error with view no URL ' + shortURLName); }
                 //res.render('view', { shortURL: 'Error bad url' });
                 res.status(404).send('404');
@@ -74,18 +74,18 @@ exports.viewData = function (shortURL, username, res, req) {
             }
             else {
                 //query streams table to ensure data stream exists and grab baseTime
-                var paramsStream = {
+                var paramsStreamQuery = {
                     TableName : versionDebug.iot_getStreamsTable(),
                     KeyConditionExpression: "#hr = :idd",
                     ExpressionAttributeNames: {
                         "#hr": "hash"
                     },
                     ExpressionAttributeValues: {
-                        ":idd": querydata.Items[0].hash
+                        ":idd": queryViewData.Items[0].hash
                     }
                 };
                 
-                docClient.query(paramsStream, function (err, querystreamdata) {
+                docClient.query(paramsStreamQuery, function (err, querystreamdata) {
                     if (err) {
                         if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
                     } else {
@@ -106,7 +106,7 @@ exports.viewData = function (shortURL, username, res, req) {
                                 "#dd": "datetime"
                             },
                             ExpressionAttributeValues: {
-                                ":idd": querydata.Items[0].hash,
+                                ":idd": queryViewData.Items[0].hash,
                                 ":basett": querystreamdata.Items[0].baseTime
                             }
                         };
@@ -117,8 +117,8 @@ exports.viewData = function (shortURL, username, res, req) {
                                 res.render('view', { shortURL: shortURLName, error: "Internal Error" });
                                 return "-1";
                             }
-                    //check the file extension matches the database, html doesn't need an extension though
-                            else if (querydata.Items[0].type != shortURLExt && shortURLExt != 'html' && querydata.Items[0].type != 'chartjs') {
+                            //check the file extension matches the database, html doesn't need an extension though
+                            else if (queryViewData.Items[0].type != shortURLExt && shortURLExt != 'html' && queryViewData.Items[0].type != 'chartjs') {
                                 res.status(404).send('404');
                                 return "-1";
                             }
@@ -134,11 +134,12 @@ exports.viewData = function (shortURL, username, res, req) {
                                 
                                 //time formatting http://stackoverflow.com/questions/10645994/node-js-how-to-format-a-date-string-in-utc
                                 //return a csv file
-                                if (querydata.Items[0].type == 'csv') {
+                                if (queryViewData.Items[0].type == 'csv') {
                                     //format as csv
-                                    var csvoutput = "DateTime(UTC), Value\n";
+                                    var csvoutput = "DateTime(" + dateCompensateTimezoneString(queryViewData.Items[0]) + "), Value\n";
                                     for (var i = 0; i < queryIOTdata.Items.length; i++) {
-                                        var strdate = new Date(queryIOTdata.Items[i].datetime).toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                                        var strdate = new Date(queryIOTdata.Items[i].datetime + dateCompensateTimezone(queryViewData.Items[0])).toISOString().replace(/T/, ' ').replace(/\..+/, '');
+                                        //var strdate = dateCompensateTimezone(queryViewData.Items[0], queryIOTdata.Items[i].datetime).toISOString().replace(/T/, ' ').replace(/\..+/, '')
                                         csvoutput += strdate + "," + queryIOTdata.Items[i].data + "\r\n";
                                     }
                                     
@@ -150,7 +151,7 @@ exports.viewData = function (shortURL, username, res, req) {
 
                                 }
                                 //return pre-formatted page for angular-chart.js
-                                else if (querydata.Items[0].type == 'chartjs') {
+                                else if (queryViewData.Items[0].type == 'chartjs') {
                                     //format the strings
                                     var numstring = "[";
                                     var datestring = "[";
@@ -158,7 +159,7 @@ exports.viewData = function (shortURL, username, res, req) {
                                     var maxdate = 0;
                                     for (var i = 0; i < queryIOTdata.Items.length; i++) {
                                         numstring += "" + queryIOTdata.Items[i].data + ", ";
-                                        var strdate = new Date(queryIOTdata.Items[i].datetime).toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                                        var strdate = new Date(queryIOTdata.Items[i].datetime + dateCompensateTimezone(queryViewData.Items[0])).toISOString().replace(/T/, ' ').replace(/\..+/, '');
                                         datestring += "\"" + strdate + "\", ";
                                         if (queryIOTdata.Items[i].datetime < mindate)
                                             mindate = queryIOTdata.Items[i].datetime;
@@ -197,18 +198,18 @@ exports.viewData = function (shortURL, username, res, req) {
                                         //mindate = Math.floor(tmpmindate.) * 1000 * 60 * 60 * 24;
                                         //maxdate = Math.ceil(maxdate / (1000 * 60 * 60 * 24)) * 1000 * 60 * 60 * 24;
                                     }
-                                    var strmindate = new Date(mindate).toISOString().replace(/T/, ' ').replace(/\..+/, '')
-                                    var strmaxdate = new Date(maxdate).toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                                    var strmindate = new Date(mindate + dateCompensateTimezone(queryViewData.Items[0])).toISOString().replace(/T/, ' ').replace(/\..+/, '');
+                                    var strmaxdate = new Date(maxdate + dateCompensateTimezone(queryViewData.Items[0])).toISOString().replace(/T/, ' ').replace(/\..+/, '');
                                     
                                     //var ts = moment(queryIOTdata.Items[i].datetime);
-                                    res.render('chartjs', { labels: datestring, datalabel: shortURLName, data: numstring, mindate: strmindate, maxdate: strmaxdate });
+                                    res.render('chartjs', { labels: datestring, datalabel: shortURLName, data: numstring, mindate: strmindate, maxdate: strmaxdate, tz: dateCompensateTimezoneString(queryViewData.Items[0]) });
                                     return "0";
                                 }
                         //return a html file (basic table)
-                                else if (querydata.Items[0].type == 'html') {
-                                    var htmloutput = "<tr><th>DateTime(UTC)</th><th>Value</th></tr>";
+                                else if (queryViewData.Items[0].type == 'html') {
+                                    var htmloutput = "<tr><th>DateTime(" + dateCompensateTimezoneString(queryViewData.Items[0]) + ")</th><th>Value</th></tr>";
                                     for (var i = 0; i < queryIOTdata.Items.length; i++) {
-                                        var strdate = new Date(queryIOTdata.Items[i].datetime).toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                                        var strdate = new Date(queryIOTdata.Items[i].datetime + dateCompensateTimezone(queryViewData.Items[0])).toISOString().replace(/T/, ' ').replace(/\..+/, '')
                                         htmloutput += "<tr><td>" + strdate + "</td><td>" + queryIOTdata.Items[i].data + "</td></tr>\r\n";
                                     }
                                     
@@ -217,7 +218,7 @@ exports.viewData = function (shortURL, username, res, req) {
                                 }
                         
                         //return a svg (or png) plot using d3
-                                else if (querydata.Items[0].type == 'svg' || querydata.Items[0].type == 'png') {
+                                else if (queryViewData.Items[0].type == 'svg' || queryViewData.Items[0].type == 'png') {
                                     html = '<!doctype html><html></html>'
                                     var document = jsdom.jsdom(html)
                                     
@@ -229,7 +230,7 @@ exports.viewData = function (shortURL, username, res, req) {
                                         //var strdate = new Date(queryIOTdata.Items[i].datetime).toISOString().replace(/T/, ' ').replace(/\..+/, '');
                                         
                                         var dd = {};
-                                        dd.datetime = new Date(queryIOTdata.Items[i].datetime);
+                                        dd.datetime = new Date(queryIOTdata.Items[i].datetime + dateCompensateTimezone(queryViewData.Items[0]));
                                         dd.value = parseInt(queryIOTdata.Items[i].data);
                                         dataFormatted.push(dd);
                                     }
@@ -322,14 +323,14 @@ exports.viewData = function (shortURL, username, res, req) {
                                 .node().outerHTML;
                                     
                                     //if svg, then send it
-                                    if (querydata.Items[0].type == 'svg') {
+                                    if (queryViewData.Items[0].type == 'svg') {
                                         res.set('Content-Type', 'image/svg+xml');
                                         res.status(200).send(html);
                                         return "0";
                                 //res.render('svgOutput', { svgstuff: svg.node().outerHTML });
                                     }
                             //if png, need to render to canvas then convert to png
-                                    else if (querydata.Items[0].type == 'png') {
+                                    else if (queryViewData.Items[0].type == 'png') {
                                         var canvas = new fabric.createCanvasForNode(700, 460);
                                         
                                         fabric.loadSVGFromString(html, function (objects, options) {
@@ -357,4 +358,29 @@ exports.viewData = function (shortURL, username, res, req) {
 
     });   
    
+}
+
+//Helper function to take into account timezones
+//We're working in millisec
+function dateCompensateTimezone(queryViewDataItems) {
+    if (typeof queryViewDataItems.timezone === "undefined" || parseInt(queryViewDataItems.timezone) == 0) {
+        return 0;
+    }
+    else {
+        return parseInt(queryViewDataItems.timezone) * 3600 * 1000;
+    }
+}
+
+function dateCompensateTimezoneString(queryViewDataItems) {
+    if (typeof queryViewDataItems.timezone === "undefined" || parseInt(queryViewDataItems.timezone) == 0) {
+        return "UTC";
+    }
+    else {
+        if (parseInt(queryViewDataItems.timezone) > 0) {
+            return "UTC +" + queryViewDataItems.timezone;
+        }
+        else {
+            return "UTC " + queryViewDataItems.timezone;
+        }
+    }
 }

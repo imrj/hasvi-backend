@@ -54,7 +54,7 @@
 							},
 							scaleLabel: {
 								display: true,
-								labelString: 'Time (UTC)'
+								labelString: '[[= model.tz ]]'
 							}
 						}]
 					}
