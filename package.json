@@ -1,6 +1,6 @@
 {
-  "name": "StoreIOT-node",
-  "version": "1.0.1",
+  "name": "Hasvi-Backend",
+  "version": "1.0.2",
   "private": true,
   "dependencies": {
     "aws-sdk": "^2.3.7",
@@ -17,6 +17,6 @@
     "morgan": "^1.7.0"
   },
   "scripts": {
-    "start": "node app.js"
+    "start": "node Hasvi-app.js"
   }
 }

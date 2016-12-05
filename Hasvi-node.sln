@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "StoreIOT-node", "StoreIOT-node.njsproj", "{C5C46231-1E1E-405F-B101-C45E68BD4A74}"
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Hasvi", "Hasvi.njsproj", "{C5C46231-1E1E-405F-B101-C45E68BD4A74}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
