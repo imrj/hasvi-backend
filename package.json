@@ -17,6 +17,6 @@
     "morgan": "^1.7.0"
   },
   "scripts": {
-    "start": "node Hasvi-app.js"
+    "start": "node Hasvi-App.js"
   }
 }
