@@ -45,7 +45,6 @@ if (!versionDebug.iot_onAWS()) {
             version: versionDebug.iot_getVersion()
         });
     }
-
 }
 else {
     // production error handler

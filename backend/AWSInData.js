@@ -19,15 +19,15 @@ exports.insertData = function (token, data, res) {
         res.render('insertData', { state: 'Error', token: "", msg: "Not enough arguments" });
         return "-1";
     }
-    
+
     if (!dataChecks.isAlphaNumeric(token) || !dataChecks.isNumericInt(data)) {
         if (!versionDebug.iot_onAWS()) { console.error('Error with INSERT DATA token ' + token); }
         res.render('insertData', { state: 'Error', token: token, msg: 'Invalid token' });
         return "-1";
     }
-    
+
     var paramsStreamQuery = {
-        TableName : versionDebug.iot_getStreamsTable(),
+        TableName: versionDebug.iot_getStreamsTable(),
         KeyConditionExpression: "#hr = :idd",
         ExpressionAttributeNames: {
             "#hr": "hash"
@@ -36,7 +36,7 @@ exports.insertData = function (token, data, res) {
             ":idd": token
         }
     };
-    
+
     //Get the relevant streams table entry
     docClient.query(paramsStreamQuery, function (err, querydata) {
         if (err) {
@@ -53,18 +53,18 @@ exports.insertData = function (token, data, res) {
                 //prepare data structure for new insert
                 var milliseconds = (new Date).getTime();
                 var paramsIOTdata = {
-                    TableName : versionDebug.iot_getDataTable(),
+                    TableName: versionDebug.iot_getDataTable(),
                     Item: {
                         "hash": token,
-                        "datetime" : milliseconds,
+                        "datetime": milliseconds,
                         "data": data,
                     }
                 };
-                
+
                 //check time of last uploaded-item
                 var LastUploadedItemparams = {
-                    TableName : versionDebug.iot_getDataTable(),
-                    Limit : 1,
+                    TableName: versionDebug.iot_getDataTable(),
+                    Limit: 1,
                     ScanIndexForward: false,
                     KeyConditionExpression: "#hr = :idd",
                     ExpressionAttributeNames: {
@@ -74,7 +74,7 @@ exports.insertData = function (token, data, res) {
                         ":idd": token
                     }
                 };
-                
+
                 //check time of last uploaded-item
                 docClient.query(LastUploadedItemparams, function (err, lastItemdata) {
                     if (err) {
@@ -90,8 +90,8 @@ exports.insertData = function (token, data, res) {
                             //check if there's enough room in this datastream (accounting for baseTime)
                             //don't return actual items, just the count of items
                             var SizeStream = {
-                                TableName : versionDebug.iot_getDataTable(),
-                                Select : "COUNT",
+                                TableName: versionDebug.iot_getDataTable(),
+                                Select: "COUNT",
                                 KeyConditionExpression: "#hr = :idd and #dd > :basett",
                                 ExpressionAttributeNames: {
                                     "#hr": "hash",
@@ -102,7 +102,7 @@ exports.insertData = function (token, data, res) {
                                     ":basett": querydata.Items[0].baseTime
                                 }
                             };
-                            
+
                             //check if there's enough room in this datastream
                             docClient.query(SizeStream, function (err, sizedata) {
                                 if (err) {
@@ -110,12 +110,12 @@ exports.insertData = function (token, data, res) {
                                 } else {
                                     if (sizedata.Count > 0) {
                                         for (var i = 0; i <= (sizedata.Count - querydata.Items[0].maxStreamLength); i++) {
-                                            //trim datastream down by 
+                                            //trim datastream down by
                                             if (!versionDebug.iot_onAWS()) { console.log("Having to trim down stream: ", token); }
                                             //query to find single item
                                             var ItemtoDeleteStream = {
-                                                TableName : versionDebug.iot_getDataTable(),
-                                                Limit : 1,
+                                                TableName: versionDebug.iot_getDataTable(),
+                                                Limit: 1,
                                                 KeyConditionExpression: "#hr = :idd and #dd > :basett",
                                                 ExpressionAttributeNames: {
                                                     "#hr": "hash",
@@ -138,7 +138,7 @@ exports.insertData = function (token, data, res) {
                                                             "datetime": toDeleteData.Items[0].datetime,
                                                         },
                                                     };
-                                                    
+
                                                     docClient.delete(paramsdelIOTdata, function (err, querydeldata) {
                                                         if (err) {
                                                             if (!versionDebug.iot_onAWS()) { console.error("Unable to trim item. Error JSON:", JSON.stringify(err, null, 2)); }
@@ -150,7 +150,7 @@ exports.insertData = function (token, data, res) {
                                             });
                                         }
                                     }
-                                    
+
                                     //OK to insert
                                     docClient.put(paramsIOTdata, function (err, querydataPut) {
                                         if (err) {
@@ -184,7 +184,6 @@ exports.insertData = function (token, data, res) {
             }
         }
     });
-
 };
 
 //Reset a stream to blank. Doesn't actaully delete the data (AWS makes it too difficult)
@@ -197,16 +196,16 @@ exports.resetData = function (token, res) {
         res.render('resetData', { state: 'Error', token: "", msg: "Not enought arguments" });
         return "-1";
     }
-    
+
     if (!dataChecks.isAlphaNumeric(token)) {
         if (!versionDebug.iot_onAWS()) { console.error('Error with rest DATA token ' + token); }
         res.render('resetData', { state: 'Error', token: token, msg: "Invalid token" });
         return "-1";
     }
-    
+
     var docClient = new AWS.DynamoDB.DocumentClient();
     var paramsStreamQuery = {
-        TableName : versionDebug.iot_getStreamsTable(),
+        TableName: versionDebug.iot_getStreamsTable(),
         KeyConditionExpression: "#hr = :idd",
         ExpressionAttributeNames: {
             "#hr": "hash"
@@ -215,7 +214,7 @@ exports.resetData = function (token, res) {
             ":idd": token
         }
     };
-    
+
     docClient.query(paramsStreamQuery, function (err, querydata) {
         if (err) {
             if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
@@ -230,33 +229,30 @@ exports.resetData = function (token, res) {
                 //if valid token go ahead and reset the stream to a new base time
                 var milliseconds = (new Date).getTime();
                 var paramsStreamUpdate = {
-                    TableName : versionDebug.iot_getStreamsTable(),
+                    TableName: versionDebug.iot_getStreamsTable(),
                     Key: {
                         "hash": token
                     },
                     AttributeUpdates: {
-                    // The attributes to update (map of attribute name to AttributeValueUpdate)                       
+                        // The attributes to update (map of attribute name to AttributeValueUpdate)
                         baseTime: {
                             Action: 'PUT', // PUT (replace)
-                            Value: milliseconds 
+                            Value: milliseconds
                         },
                     },
                 };
-                
+
                 docClient.update(paramsStreamUpdate, function (err, querydata) {
                     if (err) {
                         if (!versionDebug.iot_onAWS()) { console.error("Unable reset data. Error:", JSON.stringify(err, null, 2)); }
                         res.render('resetData', { state: 'Error', token: token, msg: "Internal Error" });
                         return "-1";
-                    } else {                       
+                    } else {
                         res.render('resetData', { state: 'Success', token: token, msg: "Reset" });
                         return "0";
                     }
-
                 });
             }
         }
     });
-
 };
-

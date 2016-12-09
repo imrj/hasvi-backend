@@ -1,7 +1,7 @@
 ﻿/*
- * This file is for getting the current version of the App and 
+ * This file is for getting the current version of the App and
  * setting production/debug var, so we know which DynamoDb tables
- * to use 
+ * to use
  * use mode=PRODUCTION as the env var*/
 
 var package = require('../package.json');
@@ -34,7 +34,6 @@ exports.iot_getVersion = function () {
     else {
         return String(package.version) + "-testing";
     }
-    
 };
 
 exports.iot_getDataTable = function () {

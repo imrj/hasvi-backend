@@ -9,7 +9,7 @@ var router = express.Router();
 
 router.get('/', function (req, res) {
     //res.render('insertData', { state: 'Error bad token', token: token, msg: data });
-    res.render('index', {version: versionDebug.iot_getVersion()});
+    res.render('index', { version: versionDebug.iot_getVersion() });
 });
 
 //posting data to database
@@ -18,7 +18,7 @@ router.get('/', function (req, res) {
 router.get('/insertData', function (req, res) {
     var token = req.query.token;
     var data = req.query.data;
-    
+
     //res.render('index');
     inData.insertData(token, data, res);
 });
@@ -34,14 +34,14 @@ router.post('/insertData', function (req, res) {
 //http://localhost:1337/resetData?token=gjt75iehdjf7rhg893e3
 router.get('/resetData', function (req, res) {
     var token = req.query.token;
-    
+
     //res.render('index');
     inData.resetData(token, res);
 });
 
 router.post('/resetData', function (req, res) {
     var token = req.body.token;
-    
+
     inData.resetData(token, res);
 });
 
@@ -54,7 +54,7 @@ router.post('/resetData', function (req, res) {
 router.get('/views/:username/:id', function (req, res) {
     var shortURL = req.params.id;
     var username = req.params.username;
-    
+
     //res.render('view', { token: shortURL });
     outData.viewData(shortURL, username, res, req);
 });

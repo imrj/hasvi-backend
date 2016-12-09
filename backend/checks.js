@@ -1,8 +1,7 @@
-﻿
-//check if input string only contains letters and numbers
-exports.isAlphaNumeric = function(str) {
+﻿//check if input string only contains letters and numbers
+exports.isAlphaNumeric = function (str) {
     var code, i, len;
-    
+
     for (i = 0, len = str.length; i < len; i++) {
         code = str.charCodeAt(i);
         if (!(code > 47 && code < 58) && // numeric (0-9)
@@ -15,6 +14,6 @@ exports.isAlphaNumeric = function(str) {
 };
 
 //check to see if number
-exports.isNumericInt = function(n) {
+exports.isNumericInt = function (n) {
     return !isNaN(parseInt(n)) && isFinite(n);
 }
