@@ -146,6 +146,16 @@ exports.insertData = function (token, data, res) {
                                         }
                                     }
 
+                                    //check if the new value is within the min/max restrictions for this stream
+                                    if (typeof querydata.Items[0].minValue !== "undefined" && querydata.Items[0].minValue !== null) {
+                                        if (typeof querydata.Items[0].maxValue !== "undefined" && querydata.Items[0].maxValue !== null) {
+                                            if (querydata.Items[0].minValue > data || querydata.Items[0].maxValue < data) {
+                                                res.render('insertData', { state: 'Error', token: token, msg: 'Value outside limits' });
+                                                return "-1";
+                                            }
+                                        }
+                                    }
+
                                     //OK to insert
                                     docClient.put(paramsIOTdata, function (err, querydataPut) {
                                         if (err) {
