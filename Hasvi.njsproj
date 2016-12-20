@@ -19,8 +19,7 @@
     <NodejsPort>1337</NodejsPort>
     <NodeExeArguments>
     </NodeExeArguments>
-    <Environment>
-    </Environment>
+    <Environment>AWS_REGION=ap-southeast-2</Environment>
     <Name>Hasvi</Name>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
@@ -41,7 +40,6 @@
     <Content Include="views\index.dot" />
     <Content Include="views\htmlOutput.dot" />
     <Content Include="views\view.dot" />
-    <Content Include="views\resetData.dot" />
     <Content Include="views\insertData.dot" />
   </ItemGroup>
   <ItemGroup>

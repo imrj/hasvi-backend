@@ -6,11 +6,6 @@ var jsdom = require("jsdom");
 var fabric = require('fabric').fabric;
 var versionDebug = require('../test/VersionDebug');
 
-//COnfig the AWS Zone
-AWS.config.update({
-    region: "ap-southeast-2"
-});
-
 //Create the dynamodb client
 var docClient = new AWS.DynamoDB.DocumentClient();
 

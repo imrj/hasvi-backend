@@ -1,9 +1,0 @@
-﻿<!DOCTYPE html>
-<html>
-  <head>
-    <title>ResetData</title>
-  </head>
-  <body>
-    <p>[[= model.state ]], [[= model.token ]], [[= model.msg ]]</p>
-  </body>
-</html>

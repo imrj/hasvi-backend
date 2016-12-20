@@ -3,11 +3,6 @@ var AWS = require("aws-sdk");
 var dataChecks = require('../backend/checks');
 var versionDebug = require('../test/VersionDebug');
 
-//check to see if this is a valid hash
-AWS.config.update({
-    region: "ap-southeast-2"
-});
-
 var docClient = new AWS.DynamoDB.DocumentClient();
 
 //Insert data into an existing datastream
@@ -179,77 +174,6 @@ exports.insertData = function (token, data, res) {
                                 }
                             });
                         }
-                    }
-                });
-            }
-        }
-    });
-};
-
-//Reset a stream to blank. Doesn't actaully delete the data (AWS makes it too difficult)
-//Instead updates the 'baseTime' in the streams table to the current datetime as the '0' time
-exports.resetData = function (token, res) {
-    //function insertData(token, data, res) {
-    //validate the input
-    if (typeof token === "undefined" || token === null || token == "") {
-        if (!versionDebug.iot_onAWS()) { console.error('Error not enough arguments '); }
-        res.render('resetData', { state: 'Error', token: "", msg: "Not enought arguments" });
-        return "-1";
-    }
-
-    if (!dataChecks.isAlphaNumeric(token)) {
-        if (!versionDebug.iot_onAWS()) { console.error('Error with rest DATA token ' + token); }
-        res.render('resetData', { state: 'Error', token: token, msg: "Invalid token" });
-        return "-1";
-    }
-
-    var docClient = new AWS.DynamoDB.DocumentClient();
-    var paramsStreamQuery = {
-        TableName: versionDebug.iot_getStreamsTable(),
-        KeyConditionExpression: "#hr = :idd",
-        ExpressionAttributeNames: {
-            "#hr": "hash"
-        },
-        ExpressionAttributeValues: {
-            ":idd": token
-        }
-    };
-
-    docClient.query(paramsStreamQuery, function (err, querydata) {
-        if (err) {
-            if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
-        } else {
-            if (!versionDebug.iot_onAWS()) { console.log("Query for valid token succeeded."); }
-            if (querydata.Items.length != 1) {
-                if (!versionDebug.iot_onAWS()) { console.error('Error with reset DATA no token ' + token); }
-                res.render('resetData', { state: 'Error', token: token, msg: "Invalid token" });
-                return "-1";
-            }
-            else {
-                //if valid token go ahead and reset the stream to a new base time
-                var milliseconds = (new Date).getTime();
-                var paramsStreamUpdate = {
-                    TableName: versionDebug.iot_getStreamsTable(),
-                    Key: {
-                        "hash": token
-                    },
-                    AttributeUpdates: {
-                        // The attributes to update (map of attribute name to AttributeValueUpdate)
-                        baseTime: {
-                            Action: 'PUT', // PUT (replace)
-                            Value: milliseconds
-                        },
-                    },
-                };
-
-                docClient.update(paramsStreamUpdate, function (err, querydata) {
-                    if (err) {
-                        if (!versionDebug.iot_onAWS()) { console.error("Unable reset data. Error:", JSON.stringify(err, null, 2)); }
-                        res.render('resetData', { state: 'Error', token: token, msg: "Internal Error" });
-                        return "-1";
-                    } else {
-                        res.render('resetData', { state: 'Success', token: token, msg: "Reset" });
-                        return "0";
                     }
                 });
             }

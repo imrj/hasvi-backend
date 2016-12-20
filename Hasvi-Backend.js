@@ -26,7 +26,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 //Declare the URL routes and map to events
 app.use('/', routes);
 app.use('/insertData', routes);
-app.use('/resetData', routes);
 app.use('/views/:username/:id', routes);
 
 // error handlers

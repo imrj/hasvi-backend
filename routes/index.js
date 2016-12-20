@@ -30,21 +30,6 @@ router.post('/insertData', function (req, res) {
     inData.insertData(token, data, res);
 });
 
-//reset a stream's data
-//http://localhost:1337/resetData?token=gjt75iehdjf7rhg893e3
-router.get('/resetData', function (req, res) {
-    var token = req.query.token;
-
-    //res.render('index');
-    inData.resetData(token, res);
-});
-
-router.post('/resetData', function (req, res) {
-    var token = req.body.token;
-
-    inData.resetData(token, res);
-});
-
 //view a stream, given the ID
 //http://localhost:1337/views/admin/TestRunnerCsv.csv
 //http://localhost:1337/views/admin/testrunnersvg.svg
