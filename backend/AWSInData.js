@@ -3,6 +3,10 @@ var AWS = require("aws-sdk");
 var dataChecks = require('../backend/checks');
 var versionDebug = require('../test/VersionDebug');
 
+//Configure for current region
+AWS.config.update({
+    region: process.env.region
+});
 var docClient = new AWS.DynamoDB.DocumentClient();
 
 //Insert data into an existing datastream

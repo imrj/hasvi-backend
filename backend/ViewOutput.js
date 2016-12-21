@@ -7,6 +7,9 @@ var fabric = require('fabric').fabric;
 var versionDebug = require('../test/VersionDebug');
 
 //Create the dynamodb client
+AWS.config.update({
+    region: process.env.region
+});
 var docClient = new AWS.DynamoDB.DocumentClient();
 
 //Given the shortURL, genertate a view

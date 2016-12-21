@@ -19,7 +19,7 @@
     <NodejsPort>1337</NodejsPort>
     <NodeExeArguments>
     </NodeExeArguments>
-    <Environment>AWS_REGION=ap-southeast-2</Environment>
+    <Environment>REGION=ap-southeast-2</Environment>
     <Name>Hasvi</Name>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
