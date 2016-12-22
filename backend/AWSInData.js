@@ -5,7 +5,7 @@ var versionDebug = require('../test/VersionDebug');
 
 //Configure for current region
 AWS.config.update({
-    region: process.env.region
+    region: process.env.awsregion
 });
 var docClient = new AWS.DynamoDB.DocumentClient();
 
