@@ -3,7 +3,7 @@ var AWS = require("aws-sdk");
 var dataChecks = require('../backend/checks');
 var d3 = require("d3");
 var jsdom = require("jsdom");
-var fabric = require('fabric').fabric;
+//var fabric = require('fabric').fabric;
 var versionDebug = require('../test/VersionDebug');
 
 //Create the dynamodb client
@@ -326,21 +326,21 @@ exports.viewData = function (shortURL, username, res, req) {
                                         //res.render('svgOutput', { svgstuff: svg.node().outerHTML });
                                     }
                                     //if png, need to render to canvas then convert to png
-                                    else if (queryViewData.Items[0].type == 'png') {
-                                        var canvas = new fabric.createCanvasForNode(700, 460);
+                                    //else if (queryViewData.Items[0].type == 'png') {
+                                    //    var canvas = new fabric.createCanvasForNode(700, 460);
 
-                                        fabric.loadSVGFromString(html, function (objects, options) {
-                                            var obj = new fabric.PathGroup(objects, options);
-                                            canvas.add(obj);
-                                            canvas.renderAll();
-                                            var stream = canvas.createPNGStream();
+                                    //    fabric.loadSVGFromString(html, function (objects, options) {
+                                    //        var obj = new fabric.PathGroup(objects, options);
+                                    //        canvas.add(obj);
+                                    //        canvas.renderAll();
+                                    //        var stream = canvas.createPNGStream();
 
-                                            //res.setHeader('Content-disposition', 'attachment; filename=data.png');
-                                            res.set('Content-Type', 'image/png');
-                                            stream.pipe(res);
-                                            return "0";
-                                        });
-                                    }
+                                    //        //res.setHeader('Content-disposition', 'attachment; filename=data.png');
+                                    //        res.set('Content-Type', 'image/png');
+                                    //        stream.pipe(res);
+                                    //        return "0";
+                                    //    });
+                                    //}
                                 }
                             }
                         });

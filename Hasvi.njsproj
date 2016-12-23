@@ -32,7 +32,6 @@
     <Compile Include="Hasvi-Backend.js" />
     <Compile Include="routes\index.js" />
     <Compile Include="test\VersionDebug.js" />
-    <Content Include=".ebextensions\elastic-beanstalk.config" />
     <Content Include=".elasticbeanstalk\config.yml" />
     <Content Include="package.json" />
     <Content Include="views\error.dot" />
