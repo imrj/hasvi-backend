@@ -27,7 +27,16 @@ The data is stored in a DynamoDB database(s).
 1. Define the following environmental variables:
   1. "awsregion" with name of the relevant AWS region that the database is running on (ie. "ap-southeast-2")
   2. "mode" with value "PRODUCTION" if running the non-debug version. Otherwise the debug version is used.
-2. Upload a zipped copy of Hasvi-backend to an AWS instance, or run "nodejs Hasvi-App.js" 
+2. Running on AWS
+  1. Upload a zipped copy of Hasvi-backend to an AWS instance
+3. Running in Visual Studio (requires Node.js Tool for Visual Studio https://www.visualstudio.com/vs/node-js/)
+  1. Open and run the project, ensuring the environmental variables in the project properties are set correctly
+4. Running from the Linux commandline
+  1. Ensure nodejs and npm are installed (https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions)
+  2. Install the required libraries via `npm install` in the hasvi-backend directory
+  3. run `nodejs Hasvi-App.js`
+  
+Hasvi-backend runs on port 3000 by default. It will be available on http://127.0.0.1:3000 if running locally
 
 ## Debug and Production Versions
 Hasvi-backend has two modes: debug and production. The differences are:
@@ -36,3 +45,11 @@ Hasvi-backend has two modes: debug and production. The differences are:
 
 The running mode can be ascertained by navigating to the root site (ie. http://data.hasvi.com) which displays the running version and if debug mode is running.
 
+## Architecture
+There are two parts to Hasvi: streams and views. In the below examples, `hasviurl` is the url of the Hasvi instance (ie. data.hasvi.com).
+
+Streams are a timestamped series of data (ie. a from a temperature sensor) and are inserted via s http GET or POST request to http://hasviurl/insert?token=xxx&data=yyy, where `xxx` is a valid stream ID and `yyy` is the data to insert (integer number). A list of valid streams is stored in the streams table, along with the associated limits and properties.
+
+The stream data itself is stored in the IOTData2 table.
+
+Views are a visualisation of a particular stream. The visualisation can be text (csv, html) or graphical (chartjs, svg). They are called by a http GET request to http://hasviurl/views/username/stream, where `username` and `stream` are as per the entries in the views table.
