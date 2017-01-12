@@ -53,3 +53,11 @@ Streams are a timestamped series of data (ie. a from a temperature sensor) and a
 The stream data itself is stored in the IOTData2 table.
 
 Views are a visualisation of a particular stream. The visualisation can be text (csv, html) or graphical (chartjs, svg). They are called by a http GET request to http://hasviurl/views/username/stream, where `username` and `stream` are as per the entries in the views table.
+
+## Credits
+Hasvi-backend makes use of the following libraries:
+- AWS SDK for node.js (https://aws.amazon.com/sdk-for-node-js/)
+- d3 (https://d3js.org/)
+- Chart.js (http://www.chartjs.org/)
+
+
