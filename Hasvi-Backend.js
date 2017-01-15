@@ -4,7 +4,7 @@ var path = require('path');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
 var engine = require('express-dot-engine');
-var versionDebug = require('./test/VersionDebug');
+var versionDebug = require('./util/VersionDebug');
 
 //The URL route events
 var routes = require('./routes/index');

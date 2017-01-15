@@ -4,7 +4,7 @@
 var express = require('express');
 var inData = require('../backend/AWSInData');
 var outData = require('../backend/ViewOutput');
-var versionDebug = require('../test/VersionDebug');
+var versionDebug = require('../util/VersionDebug');
 var router = express.Router();
 
 router.get('/', function (req, res) {
@@ -19,15 +19,15 @@ router.get('/insertData', function (req, res) {
     var token = req.query.token;
     var data = req.query.data;
 
-    //res.render('index');
     inData.insertData(token, data, res);
+
 });
 
 router.post('/insertData', function (req, res) {
     var token = req.body.token;
     var data = req.body.data;
 
-    inData.insertData(token, data, res);
+    var ret = inData.insertData(token, data, res);
 });
 
 //view a stream, given the ID

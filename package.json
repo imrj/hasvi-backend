@@ -1,5 +1,5 @@
 {
-  "name": "Hasvi-Backend",
+  "name": "hasvi-backend",
   "version": "1.0.3",
   "private": true,
   "dependencies": {
@@ -15,6 +15,13 @@
     "morgan": "^1.7.0"
   },
   "scripts": {
-    "start": "node Hasvi-App.js"
+    "start": "node Hasvi-App.js",
+    "watch": "mocha --recursive -R min --watch",
+    "test": "mocha --recursive"
+  },
+  "devDependencies": {
+    "assert": "^1.4.1",
+    "mocha": "^3.2.0",
+    "supertest": "^2.0.1"
   }
 }

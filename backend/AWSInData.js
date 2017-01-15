@@ -1,7 +1,7 @@
 ﻿var express = require('express');
 var AWS = require("aws-sdk");
-var dataChecks = require('../backend/checks');
-var versionDebug = require('../test/VersionDebug');
+var dataChecks = require('../util/checks');
+var versionDebug = require('../util/VersionDebug');
 
 //Configure for current region
 AWS.config.update({

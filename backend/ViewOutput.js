@@ -1,10 +1,10 @@
 ﻿var express = require('express');
 var AWS = require("aws-sdk");
-var dataChecks = require('../backend/checks');
+var dataChecks = require('../util/checks');
 var d3 = require("d3");
 var jsdom = require("jsdom");
 //var fabric = require('fabric').fabric;
-var versionDebug = require('../test/VersionDebug');
+var versionDebug = require('../util/VersionDebug');
 
 //Create the dynamodb client
 AWS.config.update({

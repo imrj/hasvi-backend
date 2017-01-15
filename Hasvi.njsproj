@@ -26,12 +26,16 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
   <ItemGroup>
     <Compile Include="backend\AWSInData.js" />
-    <Compile Include="backend\checks.js" />
+    <Compile Include="test\AWSInData.test.js">
+      <SubType>Code</SubType>
+      <TestFramework>Mocha</TestFramework>
+    </Compile>
+    <Compile Include="util\checks.js" />
     <Compile Include="backend\ViewOutput.js" />
     <Compile Include="Hasvi-App.js" />
     <Compile Include="Hasvi-Backend.js" />
     <Compile Include="routes\index.js" />
-    <Compile Include="test\VersionDebug.js" />
+    <Compile Include="util\VersionDebug.js" />
     <Content Include=".elasticbeanstalk\config.yml" />
     <Content Include="package.json" />
     <Content Include="views\error.dot" />
@@ -45,6 +49,7 @@
     <Folder Include=".ebextensions\" />
     <Folder Include=".elasticbeanstalk\" />
     <Folder Include="backend\" />
+    <Folder Include="util\" />
     <Folder Include="test\" />
     <Folder Include="routes\" />
     <Folder Include="views\" />
