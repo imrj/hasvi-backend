@@ -3,14 +3,18 @@ var AWS = require("aws-sdk");
 var dataChecks = require('../util/checks');
 var versionDebug = require('../util/VersionDebug');
 
-//Configure for current region
-AWS.config.update({
-    region: process.env.awsregion
-});
-var docClient = new AWS.DynamoDB.DocumentClient();
+var docClient = null;
 
 //Insert data into an existing datastream
 exports.insertData = function (token, data, res) {
+    //Configure for current region, if required
+    if (docClient === null) {
+        AWS.config.update({
+            region: process.env.awsregion
+        });
+        docClient = new AWS.DynamoDB.DocumentClient();
+    }
+
     //function insertData(token, data, res) {
     //validate the input
     if (typeof token === "undefined" || token === null || typeof data === "undefined" || data === null || token == "" || data == "") {
@@ -91,14 +95,12 @@ exports.insertData = function (token, data, res) {
                             var SizeStream = {
                                 TableName: versionDebug.iot_getDataTable(),
                                 Select: "COUNT",
-                                KeyConditionExpression: "#hr = :idd and #dd > :basett",
+                                KeyConditionExpression: "#hr = :idd",
                                 ExpressionAttributeNames: {
                                     "#hr": "hash",
-                                    "#dd": "datetime"
                                 },
                                 ExpressionAttributeValues: {
                                     ":idd": token,
-                                    ":basett": querydata.Items[0].baseTime
                                 }
                             };
 
@@ -115,14 +117,12 @@ exports.insertData = function (token, data, res) {
                                             var ItemtoDeleteStream = {
                                                 TableName: versionDebug.iot_getDataTable(),
                                                 Limit: 1,
-                                                KeyConditionExpression: "#hr = :idd and #dd > :basett",
+                                                KeyConditionExpression: "#hr = :idd",
                                                 ExpressionAttributeNames: {
                                                     "#hr": "hash",
-                                                    "#dd": "datetime"
                                                 },
                                                 ExpressionAttributeValues: {
                                                     ":idd": token,
-                                                    ":basett": querydata.Items[0].baseTime
                                                 }
                                             };
                                             docClient.query(ItemtoDeleteStream, function (err, toDeleteData) {
