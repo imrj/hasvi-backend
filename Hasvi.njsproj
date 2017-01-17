@@ -26,6 +26,10 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
   <ItemGroup>
     <Compile Include="backend\AWSInData.js" />
+    <Compile Include="test\ViewOutput.test.js">
+      <SubType>Code</SubType>
+      <TestFramework>Mocha</TestFramework>
+    </Compile>
     <Compile Include="test\AWSInData.test.js">
       <SubType>Code</SubType>
       <TestFramework>Mocha</TestFramework>

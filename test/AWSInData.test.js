@@ -20,6 +20,8 @@ it('Get index page', function (done) {
 
 describe('DataIn - ', function () {
     var TestRunnerToken;
+    var TestRunnerSlow;
+    var TestRunnerFull;
 
     before(function () {
         process.env.awsregion = 'ap-southeast-2';

@@ -6,14 +6,18 @@ var jsdom = require("jsdom");
 //var fabric = require('fabric').fabric;
 var versionDebug = require('../util/VersionDebug');
 
-//Create the dynamodb client
-AWS.config.update({
-    region: process.env.awsregion
-});
-var docClient = new AWS.DynamoDB.DocumentClient();
+var docClient = null;
 
 //Given the shortURL, genertate a view
 exports.viewData = function (shortURL, username, res, req) {
+    //Configure for current region, if required
+    if (docClient === null) {
+        AWS.config.update({
+            region: process.env.awsregion
+        });
+        docClient = new AWS.DynamoDB.DocumentClient();
+    }
+
     //validate the input
     if (typeof shortURL === "undefined" || shortURL === null || shortURL == "" || typeof username === "undefined" || username === null || username == "") {
         if (!versionDebug.iot_onAWS()) { console.error('Error in view not enough arguments'); }
