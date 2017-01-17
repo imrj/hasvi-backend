@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/stephendade/hasvi-backend.svg?branch=master)](https://travis-ci.org/stephendade/hasvi-backend)
+
 # hasvi-backend
 The AWS backend to the Hasvi IOT storage and visualisation software.
 
