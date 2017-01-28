@@ -17,7 +17,7 @@
   },
   "scripts": {
     "start": "node Hasvi-App.js",
-    "watch": "mocha --recursive -R min --watch",
+    "watch": "mocha --recursive -R min --watch --timeout 4000",
     "test": "mocha --recursive"
   },
   "devDependencies": {
