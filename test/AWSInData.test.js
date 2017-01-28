@@ -140,7 +140,6 @@ describe('DataIn - ', function () {
                         expect(res).to.have.status(200);
                         expect(res).to.be.html;
                         expect(res.text).to.contain('Min refresh time not expired');
-                        done();
                     });
                 done();
             });

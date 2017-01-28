@@ -98,7 +98,7 @@ describe('Visualisation Out - ', function () {
         for (index = 0; index < SVGChart.length; ++index) {
             if (SVGChartError[index] == false) {
                 chai.request(server)
-                    .get('/views/' + username + '/' + SVGChart + '.svg')
+                    .get('/views/' + username + '/' + SVGChart[index] + '.svg')
                     .end(function (err, res) {
                         expect(err).to.be.null;
                         expect(res).to.have.status(200);
