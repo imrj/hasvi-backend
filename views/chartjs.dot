@@ -15,21 +15,11 @@
 			var myChart = new Chart(ctx, {
 				type: 'line',
 				data: {
-					labels: [[= model.labels ]],
-					datasets: [{
-						label: '[[= model.datalabel ]]',
-						data: [[= model.data ]],
-						borderWidth: 1,
-						cubicInterpolationMode: 'monotone',
-						fill: false,
-						lineTension: 0.0,
-						pointRadius: 0,
-						borderColor: '#ff6384'
-					}]
+					datasets: [ [[= model.datasets ]] ]
 				},
 				options: {
 					legend: {
-						display: false
+						display: true
 					},
 					scales: {
 						yAxes: [{
@@ -42,15 +32,16 @@
 							time: {
 								//format: 'MM/DD/YYYY HH:mm',
 								autoSkip: false,
+								unitStepSize: 1,
 								//round: 'hour'
-								max: '[[= model.maxdate ]]',
-								min: '[[= model.mindate ]]'
+								//max: '[[= model.maxdate ]]',
+								//min: '[[= model.mindate ]]'
 							},
 							ticks: {
 								padding: 50,
 								maxRotation: 90,
 								minRotation: 90,
-								maxTicksLimit: 20
+								maxTicksLimit: 15
 							},
 							scaleLabel: {
 								display: true,

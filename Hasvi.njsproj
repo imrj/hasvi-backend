@@ -26,6 +26,10 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
   <ItemGroup>
     <Compile Include="backend\AWSInData.js" />
+    <Compile Include="backend\svgOutput.js" />
+    <Compile Include="backend\chartjsOutput.js" />
+    <Compile Include="backend\csvOutput.js" />
+    <Compile Include="backend\htmlOutput.js" />
     <Compile Include="test\ViewOutput.test.js">
       <SubType>Code</SubType>
       <TestFramework>Mocha</TestFramework>
@@ -39,6 +43,7 @@
     <Compile Include="Hasvi-App.js" />
     <Compile Include="Hasvi-Backend.js" />
     <Compile Include="routes\index.js" />
+    <Compile Include="util\timezoneCompensation.js" />
     <Compile Include="util\VersionDebug.js" />
     <Content Include=".elasticbeanstalk\config.yml" />
     <Content Include="package.json" />
