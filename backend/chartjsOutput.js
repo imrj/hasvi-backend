@@ -6,6 +6,17 @@ var versionDebug = require('../util/VersionDebug');
 exports.chartjsView = function (inputDataNameL, inputDataNameR, inputDataL, inputDataR, timezone, timezoneString) {
     var retjsObj = {};
 
+    //figure out which y-axis to show
+    if (inputDataL.length > 0)
+        retjsObj.showL = 'true';
+    else
+        retjsObj.showL = 'false';
+
+    if (inputDataR.length > 0)
+        retjsObj.showR = 'true';
+    else
+        retjsObj.showR = 'false';
+
     ////find the earliest time out of all the streams (first datetime entry)
     //var mintime = Number.MAX_SAFE_INTEGER;
     //for (index = 0; index < inputDataL.length; ++index) {
@@ -67,9 +78,9 @@ exports.chartjsView = function (inputDataNameL, inputDataNameR, inputDataL, inpu
 
     //left items
     for (index = 0; index < inputDataL.length; ++index) {
-        if (inputDataL[index].length > 0 && inputDataL[index][inputDataL[index].length - 1].datetime > maxtime) {
-            maxtime = inputDataL[index][inputDataL[index].length - 1].datetime;
-        }
+        //if (inputDataL[index].length > 0 && inputDataL[index][inputDataL[index].length - 1].datetime > maxtime) {
+        //    maxtime = inputDataL[index][inputDataL[index].length - 1].datetime;
+        //}
         retjsObj.dataset += "\n{ label: \"" + inputDataNameL[index] + "\", yAxisID: 'L', ";
         retjsObj.dataset += "data: [";
 
@@ -106,9 +117,9 @@ exports.chartjsView = function (inputDataNameL, inputDataNameR, inputDataL, inpu
 
     //right items
     for (index = 0; index < inputDataR.length; ++index) {
-        if (inputDataR[index].length > 0 && inputDataR[index][inputDataR[index].length - 1].datetime > maxtime) {
-            maxtime = inputDataR[index][inputDataR[index].length - 1].datetime;
-        }
+        //if (inputDataR[index].length > 0 && inputDataR[index][inputDataR[index].length - 1].datetime > maxtime) {
+        //    maxtime = inputDataR[index][inputDataR[index].length - 1].datetime;
+        //}
         retjsObj.dataset += "\n{ label: \"" + inputDataNameR[index] + "\", yAxisID: 'R', ";
         retjsObj.dataset += "data: [";
 
@@ -137,6 +148,9 @@ exports.chartjsView = function (inputDataNameL, inputDataNameR, inputDataL, inpu
             retjsObj.dataset += ", ";
         }
     }
+
+    //figure out if need need to hide/show the y-axis for each side
+    retjsObj.showL
 
     return retjsObj;
 }

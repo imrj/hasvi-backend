@@ -25,16 +25,16 @@
 						yAxes: [{
 							id: 'L',
 							position: 'left',
+							display: [[= model.showL ]],
 							ticks: {
 								maxTicksLimit: 9,
-								beginAtZero: true
 							}
 						}, {
 							id: 'R',
 							position: 'right',
+							display: [[= model.showR ]],
 							ticks: {
 								maxTicksLimit: 9,
-								beginAtZero: true
 							}
 						}],
 						xAxes: [{
@@ -43,10 +43,11 @@
 								autoSkip: false,
 							},
 							ticks: {
-								padding: 50,
+								padding: 10,
 								maxRotation: 90,
 								minRotation: 90,
-								maxTicksLimit: 10
+								maxTicksLimit: 15,
+								autoSkip: true,
 							},
 							scaleLabel: {
 								display: true,

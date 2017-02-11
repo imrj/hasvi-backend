@@ -235,7 +235,7 @@ exports.viewData = function (shortURL, username, res, req) {
                         //return pre-formatted page for angular-chart.js
                         else if (queryViewData.Items[0].type == 'chartjs') {
                             var chtjs = chartJSOutput.chartjsView(retDataNameL, retDataNameR, retDataL, retDataR, tz.dateCompensateTimezone(queryViewData.Items[0]), tz.dateCompensateTimezoneString(queryViewData.Items[0]));
-                            res.render('chartjs', { datasets: chtjs.dataset, tz: tz.dateCompensateTimezoneString(queryViewData.Items[0]) });
+                            res.render('chartjs', { datasets: chtjs.dataset, tz: tz.dateCompensateTimezoneString(queryViewData.Items[0]), showL: chtjs.showL, showR: chtjs.showR});
                             return;
                         }
                         //return a html file (basic table)

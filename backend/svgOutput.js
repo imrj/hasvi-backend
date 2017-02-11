@@ -28,22 +28,24 @@ exports.svgView = function (inputDataNameL, inputDataNameR, inputDataL, inputDat
         }
     }
     for (index = 0; index < inputDataR.length; ++index) {
-        if (inputDataR[index].length > 0 && inputDataR[index][inputDataL[index].length - 1].datetime + timezone > maxtime) {
-            maxtime = inputDataR[index][inputDataL[index].length - 1].datetime + timezone;
+        if (inputDataR[index].length > 0 && inputDataR[index][inputDataR[index].length - 1].datetime + timezone > maxtime) {
+            maxtime = inputDataR[index][inputDataR[index].length - 1].datetime + timezone;
         }
     }
 
     //find min and max data values
-    var minvalue = Number.MAX_SAFE_INTEGER;
-    var maxvalue = 0;
+    var minvalueL = Number.MAX_SAFE_INTEGER;
+    var maxvalueL = 0;
+    var minvalueR = Number.MAX_SAFE_INTEGER;
+    var maxvalueR = 0;
     for (index = 0; index < inputDataL.length; ++index) {
         if (inputDataL[index].length > 0) {
             for (datidx = 0; datidx < inputDataL[index].length; ++datidx) {
-                if (inputDataL[index][datidx].data < minvalue) {
-                    minvalue = inputDataL[index][datidx].data;
+                if (inputDataL[index][datidx].data < minvalueL) {
+                    minvalueL = inputDataL[index][datidx].data;
                 }
-                if (inputDataL[index][datidx].data > maxvalue) {
-                    maxvalue = inputDataL[index][datidx].data;
+                if (inputDataL[index][datidx].data > maxvalueL) {
+                    maxvalueL = inputDataL[index][datidx].data;
                 }
             }
         }
@@ -51,18 +53,18 @@ exports.svgView = function (inputDataNameL, inputDataNameR, inputDataL, inputDat
     for (index = 0; index < inputDataR.length; ++index) {
         if (inputDataR[index].length > 0) {
             for (datidx = 0; datidx < inputDataR[index].length; ++datidx) {
-                if (inputDataR[index][datidx].data < minvalue) {
-                    minvalue = inputDataR[index][datidx].data;
+                if (inputDataR[index][datidx].data < minvalueR) {
+                    minvalueR = inputDataR[index][datidx].data;
                 }
-                if (inputDataR[index][datidx].data > maxvalue) {
-                    maxvalue = inputDataR[index][datidx].data;
+                if (inputDataR[index][datidx].data > maxvalueR) {
+                    maxvalueR = inputDataR[index][datidx].data;
                 }
             }
         }
     }
 
     //scaling
-    var margin = { top: 20, right: 20, bottom: 110, left: 40 },
+    var margin = { top: 20, right: 40, bottom: 110, left: 40 },
         width = 700 - margin.left - margin.right,
         height = 450 - margin.top - margin.bottom;
 
@@ -80,19 +82,27 @@ exports.svgView = function (inputDataNameL, inputDataNameR, inputDataL, inputDat
         .attr("stroke", "#000")
         .attr("shape-rendering", "crispEdges");
 
-    //axes scaling
+    //the y axis
+    if (inputDataL.length > 0) {
+        var yL = d3.scale.linear().range([height, 0])
+            .domain([minvalueL, maxvalueL]).nice();
+        var yAxisL = d3.svg.axis().scale(yL).orient("left").ticks(10, "");
+    }
+    if (inputDataR.length > 0) {
+        var yR = d3.scale.linear().range([height, 0])
+            .domain([minvalueR, maxvalueR]).nice();
+        var yAxisR = d3.svg.axis().scale(yR).orient("right").ticks(10, "");
+    }
+
+    //The x axis
     var x = d3.time.scale.utc().range([0, width])
         .domain([mintime, maxtime]).nice();
-    var y = d3.scale.linear().range([height, 0])
-        .domain([minvalue, maxvalue]).nice();
-
     var xDateAxis = d3.svg.axis().scale(x).tickFormat(date_format);
     var xTimeAxis = d3.svg.axis().scale(x).tickFormat(time_format);
-    var yAxis = d3.svg.axis().scale(y).orient("left").ticks(10, "");
-
+    
     //add axes to canvas. Note 2 axes - one for date, the other for time
     canvas.append("g")
-        .attr("class", "axis")
+        .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
         .call(xDateAxis)
         .selectAll("text")
@@ -103,7 +113,7 @@ exports.svgView = function (inputDataNameL, inputDataNameR, inputDataL, inputDat
         .attr("fill", "#000")
         .attr("stroke", "none");
     canvas.append("g")
-        .attr("class", "axis")
+        .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
         .text("Date")
         .call(xTimeAxis)
@@ -124,24 +134,36 @@ exports.svgView = function (inputDataNameL, inputDataNameR, inputDataL, inputDat
         .style("font-size", "12px")
         .text("Time (" + timezoneString + ")");
 
-    canvas.append("g")
-        .attr("class", "axis")
-        .call(yAxis)
-        .selectAll("text")
-        .attr("fill", "#000")
-        .attr("stroke", "none");
+    if (inputDataL.length > 0) {
+        canvas.append("g")
+            .attr("class", "y axis")
+            .call(yAxisL)
+            .selectAll("text")
+            .attr("fill", "#000")
+            .attr("stroke", "none");
+    }
+
+    if (inputDataR.length > 0) {
+        canvas.append("g")
+            .attr("class", "y axis")
+            .attr("transform", "translate(" + width + " ,0)")
+            .call(yAxisR)
+            .selectAll("text")
+            .attr("fill", "#000")
+            .attr("stroke", "none");
+    }
 
     //colours
     var color = d3.scale.category10();
 
     //left items
-        for (index = 0; index < inputDataL.length; ++index) {
+    for (index = 0; index < inputDataL.length; ++index) {
 
         //create the line
         var line = d3.svg.line()
             //.interpolate("basis")
             .x(function (dd) { return x(dd.datetime + timezone); })
-            .y(function (dd) { return y(dd.data); });
+            .y(function (dd) { return yL(dd.data); });
 
         //add the line to the plot
         canvas.append("path")
@@ -160,7 +182,7 @@ exports.svgView = function (inputDataNameL, inputDataNameR, inputDataL, inputDat
         var line = d3.svg.line()
             //.interpolate("basis")
             .x(function (dd) { return x(dd.datetime + timezone); })
-            .y(function (dd) { return y(dd.data); });
+            .y(function (dd) { return yR(dd.data); });
 
         //add the line to the plot
         canvas.append("path")
