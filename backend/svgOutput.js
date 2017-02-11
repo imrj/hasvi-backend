@@ -11,25 +11,25 @@ exports.svgView = function (inputDataNameL, inputDataNameR, inputDataL, inputDat
     //find the earliest time out of all the streams (first datetime entry)
     var mintime = Number.MAX_SAFE_INTEGER;
     for (index = 0; index < inputDataL.length; ++index) {
-        if (inputDataL[index].length > 0 && inputDataL[index][0].datetime < mintime) {
-            mintime = inputDataL[index][0].datetime;
+        if (inputDataL[index].length > 0 && inputDataL[index][0].datetime + timezone < mintime) {
+            mintime = inputDataL[index][0].datetime + timezone;
         }
     }
     for (index = 0; index < inputDataR.length; ++index) {
-        if (inputDataR[index].length > 0 && inputDataR[index][0].datetime < mintime) {
-            mintime = inputDataR[index][0].datetime;
+        if (inputDataR[index].length > 0 && inputDataR[index][0].datetime + timezone < mintime) {
+            mintime = inputDataR[index][0].datetime + timezone;
         }
     }
     //find the maximum time of all the streams (last datetime entry)
     var maxtime = 0;
     for (index = 0; index < inputDataL.length; ++index) {
-        if (inputDataL[index].length > 0 && inputDataL[index][inputDataL[index].length - 1].datetime > maxtime) {
-            maxtime = inputDataL[index][inputDataL[index].length - 1].datetime;
+        if (inputDataL[index].length > 0 && inputDataL[index][inputDataL[index].length - 1].datetime + timezone > maxtime) {
+            maxtime = inputDataL[index][inputDataL[index].length - 1].datetime + timezone;
         }
     }
     for (index = 0; index < inputDataR.length; ++index) {
-        if (inputDataR[index].length > 0 && inputDataR[index][inputDataL[index].length - 1].datetime > maxtime) {
-            maxtime = inputDataR[index][inputDataL[index].length - 1].datetime;
+        if (inputDataR[index].length > 0 && inputDataR[index][inputDataL[index].length - 1].datetime + timezone > maxtime) {
+            maxtime = inputDataR[index][inputDataL[index].length - 1].datetime + timezone;
         }
     }
 
@@ -140,7 +140,7 @@ exports.svgView = function (inputDataNameL, inputDataNameR, inputDataL, inputDat
         //create the line
         var line = d3.svg.line()
             //.interpolate("basis")
-            .x(function (dd) { return x(dd.datetime); })
+            .x(function (dd) { return x(dd.datetime + timezone); })
             .y(function (dd) { return y(dd.data); });
 
         //add the line to the plot
@@ -159,7 +159,7 @@ exports.svgView = function (inputDataNameL, inputDataNameR, inputDataL, inputDat
         //create the line
         var line = d3.svg.line()
             //.interpolate("basis")
-            .x(function (dd) { return x(dd.datetime); })
+            .x(function (dd) { return x(dd.datetime + timezone); })
             .y(function (dd) { return y(dd.data); });
 
         //add the line to the plot

@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 	<head>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.bundle.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script>
 		<title>Chart</title>
 	</head>
 
@@ -23,25 +23,30 @@
 					},
 					scales: {
 						yAxes: [{
+							id: 'L',
+							position: 'left',
 							ticks: {
-								beginAtZero:true
+								maxTicksLimit: 9,
+								beginAtZero: true
+							}
+						}, {
+							id: 'R',
+							position: 'right',
+							ticks: {
+								maxTicksLimit: 9,
+								beginAtZero: true
 							}
 						}],
 						xAxes: [{
 							type: 'time',
 							time: {
-								//format: 'MM/DD/YYYY HH:mm',
 								autoSkip: false,
-								unitStepSize: 1,
-								//round: 'hour'
-								//max: '[[= model.maxdate ]]',
-								//min: '[[= model.mindate ]]'
 							},
 							ticks: {
 								padding: 50,
 								maxRotation: 90,
 								minRotation: 90,
-								maxTicksLimit: 15
+								maxTicksLimit: 10
 							},
 							scaleLabel: {
 								display: true,
