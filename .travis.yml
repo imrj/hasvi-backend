@@ -19,3 +19,4 @@ deploy:
   bucket_name: elasticbeanstalk-ap-southeast-2-508622030410
   on:
     branch: master
+    node: '6.1'
