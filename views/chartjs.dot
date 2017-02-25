@@ -3,6 +3,13 @@
 	<head>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script>
 		<title>Chart</title>
+
+		<meta property="og:url" content="http://[[= model.url ]]" />
+		<meta property="og:title" content="Hasvi - [[= model.title ]]" />
+		<meta property="og:description" content="IOT storage and visualisation" />
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="Hasvi" />
+		<meta property="og:image" content="http://[[= model.thumburl ]]" />
 	</head>
 
 	<body>
@@ -18,6 +25,9 @@
 					datasets: [ [[= model.datasets ]] ]
 				},
 				options: {
+				    animation: {
+						duration: 0,
+					},				
 					legend: {
 						display: true
 					},

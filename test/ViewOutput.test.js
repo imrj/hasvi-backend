@@ -173,4 +173,24 @@ describe('Visualisation Out - ', function () {
         }
         done();
     });
+
+    it('OpenGraph Images (ChartJS)', function (done) {
+        chai.request(server)
+            .get('/thumbs/chartjs.png')
+            .end(function (err, res) {
+                expect(err).to.be.null;
+                expect(res).to.have.status(200);
+                done();
+            });
+    });
+
+    it('OpenGraph Images (Html)', function (done) {
+        chai.request(server)
+            .get('/thumbs/html.png')
+            .end(function (err, res) {
+                expect(err).to.be.null;
+                expect(res).to.have.status(200);
+                done();
+            });
+    });
 });

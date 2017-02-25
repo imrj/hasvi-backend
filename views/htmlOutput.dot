@@ -2,6 +2,12 @@
 <html>
   <head>
     <title>Data</title>
+	<meta property="og:url" content="http://[[= model.url ]]" />
+	<meta property="og:title" content="Hasvi - [[= model.title ]]" />
+	<meta property="og:description" content="IOT storage and visualisation" />
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="Hasvi" />
+	<meta property="og:image" content="http://[[= model.thumburl ]]" />
   </head>
   <body>
     <table border="1">[[= model.rows ]]</table>

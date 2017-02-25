@@ -37,8 +37,8 @@ exports.htmlView = function (inputDataNameL, inputDataNameR, inputDataL, inputDa
         }
     }
     for (index = 0; index < inputDataR.length; ++index) {
-        if (inputDataR[index].length > 0 && inputDataR[index][inputDataL[index].length - 1].datetime + timezone > maxtime) {
-            maxtime = inputDataR[index][inputDataL[index].length - 1].datetime + timezone;
+        if (inputDataR[index].length > 0 && inputDataR[index][inputDataR[index].length - 1].datetime + timezone > maxtime) {
+            maxtime = inputDataR[index][inputDataR[index].length - 1].datetime + timezone;
         }
     }
     //if (!versionDebug.iot_onAWS()) { console.error("min=" + new Date(mintime).toISOString().replace(/T/, ' ').replace(/\..+/, '')); }

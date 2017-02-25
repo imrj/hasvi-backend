@@ -2,7 +2,7 @@
 var AWS = require("aws-sdk");
 var async = require("async");
 
-//Internal fiels to include
+//Internal fields to include
 var versionDebug = require('../util/VersionDebug');
 var tz = require('../util/timezoneCompensation');
 var dataChecks = require('../util/checks');
@@ -234,14 +234,18 @@ exports.viewData = function (shortURL, username, res, req) {
                         }
                         //return pre-formatted page for angular-chart.js
                         else if (queryViewData.Items[0].type == 'chartjs') {
+                            var fullUrl = req.get('host') + req.originalUrl;
+                            var ThumbUrl = req.get('host') + '/thumbs/chartjs.png';
                             var chtjs = chartJSOutput.chartjsView(retDataNameL, retDataNameR, retDataL, retDataR, tz.dateCompensateTimezone(queryViewData.Items[0]), tz.dateCompensateTimezoneString(queryViewData.Items[0]));
-                            res.render('chartjs', { datasets: chtjs.dataset, tz: tz.dateCompensateTimezoneString(queryViewData.Items[0]), showL: chtjs.showL, showR: chtjs.showR});
+                            res.render('chartjs', { datasets: chtjs.dataset, tz: tz.dateCompensateTimezoneString(queryViewData.Items[0]), showL: chtjs.showL, showR: chtjs.showR, url: fullUrl, title: shortURLName, thumburl: ThumbUrl});
                             return;
                         }
                         //return a html file (basic table)
                         else if (queryViewData.Items[0].type == 'html') {
+                            var fullUrl = req.get('host') + req.originalUrl;
+                            var ThumbUrl = req.get('host') + '/thumbs/html.png';
                             var htmloutput = htmlOutput.htmlView(retDataNameL, retDataNameR, retDataL, retDataR, tz.dateCompensateTimezone(queryViewData.Items[0]), tz.dateCompensateTimezoneString(queryViewData.Items[0]));
-                            res.render('htmlOutput', { rows: htmloutput });
+                            res.render('htmlOutput', { rows: htmloutput, url: fullUrl, title: shortURLName, thumburl: ThumbUrl });
                             return;
                         }
                         //return a svg plot using d3
