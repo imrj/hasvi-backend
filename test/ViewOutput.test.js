@@ -176,7 +176,7 @@ describe('Visualisation Out - ', function () {
 
     it('OpenGraph Images (ChartJS)', function (done) {
         chai.request(server)
-            .get('/thumbs/chartjs.png')
+            .get('/thumbs/chartjsThumb.png')
             .end(function (err, res) {
                 expect(err).to.be.null;
                 expect(res).to.have.status(200);
@@ -186,7 +186,7 @@ describe('Visualisation Out - ', function () {
 
     it('OpenGraph Images (Html)', function (done) {
         chai.request(server)
-            .get('/thumbs/html.png')
+            .get('/thumbs/htmlThumb.png')
             .end(function (err, res) {
                 expect(err).to.be.null;
                 expect(res).to.have.status(200);

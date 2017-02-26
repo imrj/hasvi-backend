@@ -47,8 +47,8 @@
     <Compile Include="util\VersionDebug.js" />
     <Content Include=".elasticbeanstalk\config.yml" />
     <Content Include="package.json" />
-    <Content Include="public\thumbs\chartjs.PNG" />
-    <Content Include="public\thumbs\html.PNG" />
+    <Content Include="public\thumbs\chartjsThumb.png" />
+    <Content Include="public\thumbs\htmlThumb.png" />
     <Content Include="views\error.dot" />
     <Content Include="views\chartjs.dot" />
     <Content Include="views\index.dot" />
