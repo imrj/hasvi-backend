@@ -41,6 +41,10 @@
 							display: [[= model.showL ]],
 							ticks: {
 								maxTicksLimit: 9,
+							},
+							scaleLabel: {
+								display: [[= model.isLyName ]],
+								labelString: '[[= model.LyName ]]'
 							}
 						}, {
 							id: 'R',
@@ -48,6 +52,10 @@
 							display: [[= model.showR ]],
 							ticks: {
 								maxTicksLimit: 9,
+							},
+							scaleLabel: {
+								display: [[= model.isRyName ]],
+								labelString: '[[= model.RyName ]]'
 							}
 						}],
 						xAxes: [{

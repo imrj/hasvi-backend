@@ -234,10 +234,17 @@ exports.viewData = function (shortURL, username, res, req) {
                         }
                         //return pre-formatted page for angular-chart.js
                         else if (queryViewData.Items[0].type == 'chartjs') {
+                            //generate URL's
                             var fullUrl = req.get('host') + req.originalUrl;
                             var ThumbUrl = req.get('host') + '/thumbs/chartjsThumb.png';
+                            //Generate y-axis names
+                            var useNameLYAxis = queryViewData.Items[0].nameYLeftAxis != null ? true : false;
+                            var NameLYAxis = queryViewData.Items[0].nameYLeftAxis != null ? queryViewData.Items[0].nameYLeftAxis : "";
+                            var useNameRYAxis = queryViewData.Items[0].nameYRightAxis != null ? true : false;
+                            var NameRYAxis = queryViewData.Items[0].nameYRightAxis != null ? queryViewData.Items[0].nameYRightAxis : "";
+
                             var chtjs = chartJSOutput.chartjsView(retDataNameL, retDataNameR, retDataL, retDataR, tz.dateCompensateTimezone(queryViewData.Items[0]), tz.dateCompensateTimezoneString(queryViewData.Items[0]));
-                            res.render('chartjs', { datasets: chtjs.dataset, tz: tz.dateCompensateTimezoneString(queryViewData.Items[0]), showL: chtjs.showL, showR: chtjs.showR, url: fullUrl, title: shortURLName, thumburl: ThumbUrl});
+                            res.render('chartjs', { datasets: chtjs.dataset, tz: tz.dateCompensateTimezoneString(queryViewData.Items[0]), showL: chtjs.showL, showR: chtjs.showR, url: fullUrl, title: shortURLName, thumburl: ThumbUrl, isLyName: useNameLYAxis, LyName: NameLYAxis, isRyName: useNameRYAxis, RyName: NameRYAxis});
                             return;
                         }
                         //return a html file (basic table)
