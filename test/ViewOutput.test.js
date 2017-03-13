@@ -12,6 +12,7 @@ describe('Visualisation Out - ', function () {
     var CSVChart;
     var HTMLChart;
     var ChartJSChart;
+    var ExcelChart;
 
     before(function () {
         process.env.awsregion = 'ap-southeast-2';
@@ -27,6 +28,8 @@ describe('Visualisation Out - ', function () {
         CSVChartError = [true, false, false, true, true, false, false, false, false];
         SVGChart = ['TREmptySvg', 'TR1L2RSvg', 'TR2L1RSvg', 'TR1RBlankSvg', 'TR1LBlankSvg', 'TR1RSvg', 'TR1LSvg', 'TR1L2RBlankSvg', 'TR2L1RBlankSvg'];
         SVGChartError = [true, false, false, true, true, false, false, false, false];
+        ExcelChart = ['TREmptyXlsx', 'TR1L2RXlsx', 'TR2L1RXlsx', 'TR1RBlankXlsx', 'TR1LBlankXlsx', 'TR1RXlsx', 'TR1LXlsx', 'TR1L2RBlankXlsx', 'TR2L1RBlankXlsx'];
+        ExcelChartError = [true, false, false, true, true, false, false, false, false];
 
         //Naming convention:
         //TREmpty = no streams in view
@@ -119,6 +122,30 @@ describe('Visualisation Out - ', function () {
         }
         done();
 
+    });
+
+    it('Excel', function (done) {
+        for (index = 0; index < ExcelChart.length; ++index) {
+            if (ExcelChartError[index] == false) {
+                chai.request(server)
+                    .get('/views/' + username + '/' + ExcelChart[index] + '.xlsx')
+                    .end(function (err, res) {
+                        expect(err).to.be.null;
+                        expect(res).to.have.status(200);
+                        expect(res).to.be.svg;
+                    });
+            }
+            else {
+                chai.request(server)
+                    .get('/views/' + username + '/' + ExcelChart[index] + '.xlsx')
+                    .end(function (err, res) {
+                        expect(err).to.be.null;
+                        expect(res).to.have.status(200);
+                        expect(res).to.be.html;
+                        expect(res.text).to.contain('Error');
+                    });
+            }
+        }
     });
 
     it('HTML', function (done) {

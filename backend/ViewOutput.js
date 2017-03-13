@@ -12,6 +12,7 @@ var csvOutput = require('./csvOutput');
 var htmlOutput = require('./htmlOutput');
 var chartJSOutput = require('./chartjsOutput');
 var svgOutput = require('./svgOutput');
+var xlsxOutput = require('./xlsxOutput');
 
 var docClient = null;
 
@@ -230,6 +231,15 @@ exports.viewData = function (shortURL, username, res, req) {
                             var csvoutput = csvOutput.csvView(retDataNameL, retDataNameR, retDataL, retDataR, tz.dateCompensateTimezone(queryViewData.Items[0]), tz.dateCompensateTimezoneString(queryViewData.Items[0]));
                             res.set('Content-Type', 'text/csv');
                             res.status(200).send(csvoutput);
+                            return;
+                        }
+                        //if it's an excel file...
+                        if (queryViewData.Items[0].type == 'xlsx') {
+                            var xlsxoutput = xlsxOutput.xlsxView(retDataNameL, retDataNameR, retDataL, retDataR, tz.dateCompensateTimezone(queryViewData.Items[0]), tz.dateCompensateTimezoneString(queryViewData.Items[0]));
+                            res.set('Content-Disposition', 'attachment; filename="Data.xlsx"');
+                            res.set('Content-Type', 'application/octet-stream');
+                            res.set('Content-Length', xlsxoutput.length);
+                            res.status(200).send(xlsxoutput);
                             return;
                         }
                         //return pre-formatted page for angular-chart.js

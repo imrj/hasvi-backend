@@ -26,6 +26,7 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
   <ItemGroup>
     <Compile Include="backend\AWSInData.js" />
+    <Compile Include="backend\xlsxOutput.js" />
     <Compile Include="backend\svgOutput.js" />
     <Compile Include="backend\chartjsOutput.js" />
     <Compile Include="backend\csvOutput.js" />
