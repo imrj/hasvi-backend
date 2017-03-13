@@ -63,6 +63,7 @@ describe('Visualisation Out - ', function () {
     });
 
     it('CSV', function (done) {
+        var allDone = 0;
         for (index = 0; index < CSVChart.length; ++index) {
             if (CSVChartError[index] == false) {
                 chai.request(server)
@@ -72,6 +73,10 @@ describe('Visualisation Out - ', function () {
                         expect(res).to.have.status(200);
                         expect(res).to.be.csv;
                         expect(res.text).to.contain('DateTime');
+                        allDone++;
+
+                        if (allDone == CSVChart.length)
+                            done();
                     });
             }
             else {
@@ -82,10 +87,13 @@ describe('Visualisation Out - ', function () {
                         expect(res).to.have.status(200);
                         expect(res).to.be.html;
                         expect(res.text).to.contain('Error');
+                        allDone++;
+
+                        if (allDone == CSVChart.length)
+                            done();
                     });
             }
         }
-        done();
     });
 
     it('CSV Bad extension', function (done) {
@@ -98,6 +106,7 @@ describe('Visualisation Out - ', function () {
     });
 
     it('SVG', function (done) {
+        var allDone = 0;
         for (index = 0; index < SVGChart.length; ++index) {
             if (SVGChartError[index] == false) {
                 chai.request(server)
@@ -105,8 +114,10 @@ describe('Visualisation Out - ', function () {
                     .end(function (err, res) {
                         expect(err).to.be.null;
                         expect(res).to.have.status(200);
-                        expect(res).to.be.svg;
-                        done();
+                        allDone++;
+
+                        if (allDone == SVGChart.length)
+                            done();
                     });
             }
             else {
@@ -117,14 +128,17 @@ describe('Visualisation Out - ', function () {
                         expect(res).to.have.status(200);
                         expect(res).to.be.html;
                         expect(res.text).to.contain('Error');
+                        allDone++;
+
+                        if (allDone == SVGChart.length)
+                            done();
                     });
             }
         }
-        done();
-
     });
 
     it('Excel', function (done) {
+        var allDone = 0;
         for (index = 0; index < ExcelChart.length; ++index) {
             if (ExcelChartError[index] == false) {
                 chai.request(server)
@@ -132,7 +146,11 @@ describe('Visualisation Out - ', function () {
                     .end(function (err, res) {
                         expect(err).to.be.null;
                         expect(res).to.have.status(200);
-                        expect(res).to.be.svg;
+                        expect(res.header['content-disposition']).to.contain('attachment; filename="Data.xlsx"');
+                        allDone++;
+
+                        if (allDone == ExcelChart.length)
+                            done();
                     });
             }
             else {
@@ -143,12 +161,17 @@ describe('Visualisation Out - ', function () {
                         expect(res).to.have.status(200);
                         expect(res).to.be.html;
                         expect(res.text).to.contain('Error');
+                        allDone++;
+
+                        if (allDone == ExcelChart.length)
+                            done();
                     });
             }
         }
     });
 
     it('HTML', function (done) {
+        var allDone = 0;
         for (index = 0; index < HTMLChart.length; ++index) {
             if (HTMLChartError[index] == false) {
                 chai.request(server)
@@ -158,7 +181,10 @@ describe('Visualisation Out - ', function () {
                         expect(res).to.have.status(200);
                         expect(res).to.be.html;
                         expect(res.text).to.contain('DateTime');
-                        expect(res.text).to.contain('Value');
+                        allDone++;
+
+                        if (allDone == HTMLChart.length)
+                            done();
                     });
             }
             else {
@@ -169,13 +195,17 @@ describe('Visualisation Out - ', function () {
                         expect(res).to.have.status(200);
                         expect(res).to.be.html;
                         expect(res.text).to.contain('Error');
+                        allDone++;
+
+                        if (allDone == HTMLChart.length)
+                            done();
                     });
             }
         }
-        done();
     });
 
     it('ChartJS', function (done) {
+        var allDone = 0;
         for (index = 0; index < ChartJSChart.length; ++index) {
             if (ChartJSChartError[index] == false) {
                 chai.request(server)
@@ -185,6 +215,10 @@ describe('Visualisation Out - ', function () {
                         expect(res).to.have.status(200);
                         expect(res).to.be.html;
                         expect(res.text).to.contain('var myChart = new Chart(ctx, {');
+                        allDone++;
+
+                        if (allDone == ChartJSChart.length)
+                            done();
                     });
             }
             else {
@@ -195,10 +229,13 @@ describe('Visualisation Out - ', function () {
                         expect(res).to.have.status(200);
                         expect(res).to.be.html;
                         expect(res.text).to.contain('Error');
+                        allDone++;
+
+                        if (allDone == ChartJSChart.length)
+                            done();
                     });
             }
         }
-        done();
     });
 
     it('OpenGraph Images (ChartJS)', function (done) {
