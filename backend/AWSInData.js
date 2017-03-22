@@ -83,8 +83,8 @@ exports.insertData = function (token, data, res) {
                     if (err) {
                         if (!versionDebug.iot_onAWS()) { console.error("Unable to query. Error:", JSON.stringify(err, null, 2)); }
                     } else {
-                        //check if the time-since-last-item-inserted is after the minRefresh threshold
-                        if (lastItemdata.Count > 0 && lastItemdata.Items[0].datetime + 1000 * querydata.Items[0].minRefresh > milliseconds) {
+                        //check if the time-since-last-item-inserted is after the minRefresh threshold. Ignore if minRefresh <= 0
+                        if (lastItemdata.Count > 0 && lastItemdata.Items[0].datetime + 1000 * querydata.Items[0].minRefresh > milliseconds && querydata.Items[0].minRefresh > 0) {
                             //it's not ... send an error message to the user
                             if (!versionDebug.iot_onAWS()) { console.log('Fail with INSERT DATA token (minRefresh not ready) ' + token); }
                             res.render('insertData', { state: 'Error', token: token, msg: 'Min refresh time not expired' });
